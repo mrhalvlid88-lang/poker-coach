@@ -38,19 +38,18 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--brass);outline-
 #top .sp{flex:1}
 .chip{background:var(--ink2);border-radius:99px;padding:3px 9px;font-size:11.5px;color:var(--mute);white-space:nowrap}
 .chip b{color:var(--paper)}
-.tbtn{background:var(--ink2);border-radius:10px;padding:6px 10px;font-size:12.5px;font-weight:600}
+.tbtn{background:var(--ink2);border-radius:10px;padding:6px 8px;font-size:12px;font-weight:600;white-space:nowrap}
 
-#tableWrap{flex:1;min-height:250px;position:relative;margin:2px 6px 0}
+#tableWrap{flex:1;min-height:285px;position:relative;margin:2px 6px 0}
 #felt{position:absolute;inset:11% 9% 13% 9%;border-radius:999px;
   background:radial-gradient(ellipse at 50% 35%,var(--felt),var(--felt2) 78%);
   border:7px solid #5b4423;box-shadow:0 0 0 2px var(--brass),inset 0 0 40px #0008,0 12px 30px #000a}
 #felt::after{content:"";position:absolute;inset:9px;border-radius:999px;border:1px dashed #c39a5540}
-#center{position:absolute;left:50%;top:41%;transform:translate(-50%,-50%);text-align:center;width:72%}
+#center{position:absolute;left:50%;top:43%;transform:translate(-50%,-50%);text-align:center;width:72%}
 #pot{font-family:var(--display);font-weight:900;font-size:19px;color:var(--brass);line-height:1.15}
 #pot small{font-family:var(--body);font-weight:400;font-size:10.5px;color:var(--mute);display:block}
 #potSub{font-size:10px;color:var(--mute);min-height:14px}
 #board{display:flex;gap:4px;justify-content:center;margin-top:2px;direction:ltr;min-height:50px;perspective:400px}
-#street{font-size:11px;color:var(--mute);margin-top:3px}
 
 .card{width:34px;height:48px;border-radius:5px;background:var(--paper);color:#161a19;display:inline-flex;
   flex-direction:column;align-items:center;justify-content:center;font-weight:800;font-size:15px;line-height:1;
@@ -108,7 +107,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--brass);outline-
   box-shadow:0 3px 0 -1px #a8391b,0 6px 0 -1px #e4572e,0 8px 6px #0008;transition:left .55s var(--ease),top .55s var(--ease),opacity .2s ease .4s}
 .dbtn{position:absolute;transform:translate(-50%,-50%);width:18px;height:18px;border-radius:50%;background:var(--paper);color:#111;z-index:4;
   font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 3px #000;transition:left .7s var(--ease),top .7s var(--ease)}
-#myhand{position:absolute;left:50%;bottom:0;transform:translateX(-50%);font-size:11.5px;color:var(--mute);white-space:nowrap}
+#myhand{text-align:center;font-size:11.5px;color:var(--mute);white-space:nowrap;margin-top:14px}
 #myhand b{color:var(--paper)}
 
 /* نوار ترتیب حرکت‌ها */
@@ -123,7 +122,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--brass);outline-
 #feed .ar{color:#ffffff40;font-size:10px}
 @keyframes feedIn{from{transform:translateX(-10px);opacity:0}to{transform:none;opacity:1}}
 
-#coach{margin:4px 10px 0;background:var(--paper);color:var(--paper-ink);border-radius:12px;padding:8px 12px;font-size:13px;line-height:1.7;
+#coach{flex:0 1 auto;min-height:44px;margin:4px 10px 0;background:var(--paper);color:var(--paper-ink);border-radius:12px;padding:8px 12px;font-size:13px;line-height:1.7;
   max-height:34%;overflow:auto;border-right:5px solid var(--brass);transition:border-color .3s}
 #coach.g-good{border-right-color:var(--good)}#coach.g-ok{border-right-color:var(--warn)}#coach.g-bad{border-right-color:var(--bad)}
 #coach h3{font-family:var(--display);font-weight:900;font-size:14px;margin:4px 0 2px}
@@ -138,7 +137,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--brass);outline-
 .pill{display:inline-block;border-radius:99px;padding:0 9px;font-weight:800;font-size:12px;color:#fff}
 .pill.good{background:var(--good)}.pill.ok{background:var(--warn);color:#201a05}.pill.bad{background:var(--bad)}
 
-#ctl{padding:8px 10px calc(10px + env(safe-area-inset-bottom));min-height:118px}
+#ctl{flex-shrink:0;padding:8px 10px calc(10px + env(safe-area-inset-bottom));min-height:118px}
 #sizing{display:flex;flex-direction:column;gap:6px;margin-bottom:8px}
 #presets{display:flex;gap:5px}
 #presets button{flex:1;background:var(--ink2);border:1px solid #2b4a4c;border-radius:8px;padding:6px 0;font-size:12px}
@@ -188,6 +187,24 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--brass);outline-
 .navrow button{flex:1;background:#1c242218;border-radius:10px;padding:9px;font-weight:800;color:var(--paper-ink)}
 .navrow button:disabled{opacity:.35}
 .modeNote{font-size:12px;color:#5a6663;margin:2px 0 4px}
+.tabs{display:flex;gap:6px;margin:8px 0}
+.tabs button{flex:1;background:#1c242218;border-radius:10px;padding:9px;font-weight:800;color:var(--paper-ink)}
+.tabs button.on{background:var(--paper-ink);color:var(--paper)}
+.grid{display:grid;grid-template-columns:repeat(13,1fr);gap:2px;direction:ltr;margin:8px 0}
+.grid button{aspect-ratio:1;border-radius:4px;font-size:8.5px;font-weight:800;padding:0;color:#111;font-family:Georgia,serif;letter-spacing:-.3px}
+.grid button.dim{opacity:.22}
+.grid button.sel{outline:2.5px solid var(--paper-ink);outline-offset:1px;z-index:1}
+.t0{background:#e4572e;color:#fff!important}.t1{background:#f0933e}.t2{background:#e9c94d}.t3{background:#8fc77a}.t4{background:#7fbfc0}.t5{background:#c9c4b6}
+.lgd{display:flex;flex-wrap:wrap;gap:4px 10px;font-size:11px;margin:4px 0}
+.lgd i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-left:4px;vertical-align:-1px}
+.hcard{background:#1c242210;border-radius:12px;padding:10px 12px;margin:8px 0}
+.hcard h3{font-family:var(--display);font-weight:900;font-size:17px;margin:0 0 4px}
+.kv{display:flex;justify-content:space-between;gap:8px;border-bottom:1px dotted #0003;padding:2px 0}
+.kv span:last-child{font-weight:800;text-align:left}
+.sheet h3.sec{font-family:var(--display);font-weight:900;font-size:16px;margin:16px 0 4px}
+.trk{width:100%;border-collapse:collapse;font-size:12.5px;margin:4px 0}
+.trk td,.trk th{padding:3px 4px;border-bottom:1px dotted #0002;text-align:right}
+.trk th{font-size:11.5px;color:#6b5a35}
 .opt{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px dotted #0002}
 .opt .seg{display:flex;gap:4px}
 .opt .seg button{background:#1c242218;border-radius:8px;padding:5px 11px;font-weight:800;color:var(--paper-ink)}
@@ -206,24 +223,25 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--brass);outline-
 <div id="app">
   <div id="top">
     <h1>مربی پوکر</h1>
-    <span class="chip">دست <b id="handNo">۱</b></span>
     <span class="chip">سود <b id="net">۰</b></span>
     <span class="sp"></span>
+    <button class="tbtn" id="guideBtn" type="button">راهنما</button>
     <button class="tbtn" id="histBtn" type="button">تاریخچه</button>
     <button class="tbtn" id="menuBtn" type="button">تنظیمات</button>
   </div>
   <div id="tableWrap">
     <div id="felt"></div>
-    <div id="center"><div id="pot"></div><div id="potSub"></div><div id="board"></div><div id="street"></div></div>
+    <div id="center"><div id="pot"></div><div id="potSub"></div><div id="board"></div></div>
     <div id="seats"></div>
-    <div id="myhand"></div>
   </div>
+  <div id="myhand"></div>
   <div id="feed" aria-label="ترتیب حرکت‌های این دور"></div>
   <div id="coach"></div>
   <div id="ctl"></div>
   <div class="sheet" id="endSheet" hidden><div class="body" id="endBody"></div><div class="foot"><button class="ghost" id="endHist" type="button">تاریخچه</button><button class="big" id="nextBtn" type="button">دست بعدی</button></div></div>
   <div class="sheet" id="menuSheet" hidden><div class="body" id="menuBody"></div><div class="foot"><button class="big" id="menuClose" type="button">برگشت به میز</button></div></div>
   <div class="sheet" id="histSheet" hidden style="max-height:86%"><div class="body" id="histBody"></div><div class="foot"><button class="big" id="histClose" type="button">برگشت به میز</button></div></div>
+  <div class="sheet" id="guideSheet" hidden style="max-height:100%;height:100%;border-radius:0"><div class="body" id="guideBody"></div><div class="foot"><button class="big" id="guideClose" type="button">برگشت به میز</button></div></div>
   <div class="sheet" id="helpSheet" hidden><div class="body" id="helpBody"></div><div class="foot"><button class="big" id="helpClose" type="button">فهمیدم، بزن بریم</button></div></div>
 </div>
 <script>
@@ -320,15 +338,14 @@ function chen(r1,r2,suited){
   if(gap<=1&&hi<10) s+=1;
   return s+hi*0.01+lo*0.001;
 }
-var PF={};
+var PF={}, EQ={}, RANK=[];
+var EQS='849732496674511312654477285659496292643470263652479277639458240648470265627439228628449243600416204618438233600404189608421219590391184600414217577385173603412223579382184588401219567374181585397214558363170573386205548350168821687431629468285614447247629453270605429234620448261593422217599429233576394193583402215560368171579401202550356169569382203542350161558375196536341151550365190523334147539357183510322143527354179505314140802649386603437259581414228594432249569399221575402227557375189562381210541355168546364195512334151536358187511322144526349177500313137523341172486301135510329172480294128500325168474282125776604332574418245552393217555395223534356188542372210516344174519354190498322150506327175481301135499324166476287125490319163463281123477309159453269118474302156445266116752580300541391225518356189526367204501336169505346186480310151490327171460289133473310161443273116468303156432262113459296151426252109445285149415245108720537269507361199485322169487339191466306150476319174443289134458305157426263120439285146411250103432281140402240103424274139390229095689498238483344196448301154464318176433282138447302163410263123426282143391244107409267136373222095401259133368220089665460219454321184419287138438301166404264129419279154386244111400261140368227100379243127342204085633436202433306170398271129413285159378248118399259142359228102380250132338208091601400184414293164381255124399270153361231118378257138343215101567367173390267151346223109368244135331205094539341163359238134325197089506302154';
 (function(){
-  var list=[],hi,lo;
-  for(hi=0;hi<13;hi++) for(lo=0;lo<=hi;lo++){
-    if(hi===lo) list.push({k:hi+'-'+lo+'p',s:chen(hi,lo,false),n:6});
-    else { list.push({k:hi+'-'+lo+'s',s:chen(hi,lo,true),n:4}); list.push({k:hi+'-'+lo+'o',s:chen(hi,lo,false),n:12}); }
-  }
+  var list=[],hi,lo,k=0,t;
+  var add=function(key,n){ var v=[+EQS.substr(k,3)/1000,+EQS.substr(k+3,3)/1000,+EQS.substr(k+6,3)/1000]; k+=9; EQ[key]=v; list.push({k:key,s:v[0]/.5+v[1]/.333+v[2]/.167,n:n}); };
+  for(hi=12;hi>=0;hi--) for(lo=hi;lo>=0;lo--){ if(hi===lo) add(hi+'-'+lo+'p',6); else { add(hi+'-'+lo+'s',4); add(hi+'-'+lo+'o',12); } }
   list.sort(function(a,b){return b.s-a.s;});
-  var cum=0; list.forEach(function(h){ cum+=h.n; PF[h.k]=cum/1326; });
+  var cum=0; list.forEach(function(x){ cum+=x.n; PF[x.k]=cum/1326; RANK.push(x.k); });
 })();
 function pfPct(a,b){
   var r1=a>>2,r2=b>>2,hi=Math.max(r1,r2),lo=Math.min(r1,r2);
@@ -376,13 +393,34 @@ function equity(hero,board,opps,iters){
 }
 function countOuts(hero,board){
   if(board.length<3||board.length>4) return null;
-  var used={}, n=0, strong=0, cur=catOf(evalHand(hero.concat(board)));
+  var used={}, n=0, strong=0, fl=0, st=0, cur=catOf(evalHand(hero.concat(board)));
   hero.concat(board).forEach(function(c){used[c]=1;});
   for(var c=0;c<52;c++){ if(used[c]) continue;
     var b2=board.concat([c]), hc=catOf(evalHand(hero.concat(b2))), bc=catOf(evalHand(b2));
-    if(hc>cur&&hc>bc){ n++; if(hc>=4) strong++; }
+    if(hc>cur&&hc>bc){ n++; if(hc>=4) strong++; if(hc===5||hc===8) fl++; else if(hc===4) st++; }
   }
-  return {n:n,strong:strong};
+  return {n:n,strong:strong,fl:fl,st:st};
+}
+function equityKnown(hero,opp,board,iters){
+  var used=new Uint8Array(52), deck=[], c, i, need=5-board.length, win=0;
+  hero.concat(board).forEach(function(x){used[x]=1;}); opp.forEach(function(o){used[o[0]]=1;used[o[1]]=1;});
+  for(c=0;c<52;c++) if(!used[c]) deck.push(c);
+  if(need===0) iters=1;
+  for(var it=0;it<iters;it++){
+    var full=board.slice();
+    for(i=0;i<need;i++){ var j=i+((Math.random()*(deck.length-i))|0), t=deck[i]; deck[i]=deck[j]; deck[j]=t; full.push(deck[i]); }
+    var hs=evalHand(hero.concat(full)), best=-1, cnt=0;
+    opp.forEach(function(o){ var v=evalHand(o.concat(full)); if(v>best){best=v;cnt=1;} else if(v===best) cnt++; });
+    if(hs>best) win+=1; else if(hs===best) win+=1/(cnt+1);
+  }
+  return win/iters;
+}
+function trackEq(){
+  if(!HAS_DOM||AUTO||P[0].folded) return;
+  var opps=P.filter(function(q){return !q.folded&&!q.isHero;});
+  if(!opps.length) return;
+  var o=countOuts(P[0].cards,G.board);
+  G.track.push({s:G.street,n:opps.length,est:equity(P[0].cards,G.board,opps.map(function(x){return {top:x.top,agg:x.agg};}),700).eq,fl:o?o.fl:0,st:o?o.st:0,outs:o?o.n:0});
 }
 function valueThr(n){ return n<=1?.6:n===2?.47:n===3?.4:n===4?.35:.31; }
 
@@ -394,12 +432,12 @@ var BOTS=[
   {name:'نگار',tag:'خیلی سفت',loose:.6,aggr:.45,bluff:.03,sticky:-.03},
   {name:'بهرام',tag:'متعادل',loose:1.1,aggr:.6,bluff:.15,sticky:0}
 ];
-var S={opps:5,autoHint:false,speed:1,seenHelp:false,mode:0,step:false};
+var S={opps:5,autoHint:false,speed:1,seenHelp:false,mode:0,step:false,auto:false};
 var T={players:[],dealer:-1,handNo:0,stats:null,history:[]};
 var P=[], G=null;
 var UI={advice:null,hintOpen:false,feedback:null,raiseTo:0,shownBoard:0,n:0,prevBet:[],cardKey:[],actTxt:[],turnKey:'',paid:false};
 
-function newStats(){ return {hands:0,won:0,net:0,good:0,ok:0,bad:0,vpip:0,pfr:0,showdowns:0,sdWon:0}; }
+function newStats(){ return {hands:0,won:0,net:0,good:0,ok:0,bad:0,vpip:0,pfr:0,showdowns:0,sdWon:0,winBy:{},pos:{}}; }
 function setupTable(){
   T.players=[{name:'تو',isHero:true,stack:START}];
   for(var i=0;i<S.opps;i++){ var b=BOTS[i]; T.players.push({name:b.name,style:b,stack:START}); }
@@ -424,7 +462,7 @@ function startHand(){
   var deck=[]; for(var c=0;c<52;c++) deck.push(c);
   for(var i=51;i>0;i--){ var j=(Math.random()*(i+1))|0, t=deck[i]; deck[i]=deck[j]; deck[j]=t; }
   G={street:0,board:[],deck:deck,curBet:BB,minRaise:BB,actor:-1,over:false,log:[],review:[],raises:0,limpers:0,
-     startStack:P[0].stack,vpip:false,pfr:false,result:null,runout:false};
+     startStack:P[0].stack,vpip:false,pfr:false,result:null,runout:false,track:[]};
   P.forEach(function(p){ p.bet=0;p.total=0;p.folded=false;p.allin=false;p.acted=false;p.cards=[deck.pop(),deck.pop()];
     p.top=1;p.agg=false;p.lastAct='';p.lastCls='';p.shown=false;p.score=0;p.won=0; });
   G.pos=positions();
@@ -434,6 +472,7 @@ function startHand(){
   G.acts=[{i:sb,label:P[sb].lastAct,cls:''},{i:bb,label:P[bb].lastAct,cls:''}]; G.aggr=bb;
   UI.feedback=null; UI.advice=null;
   if(HAS_DOM) beginHandUI();
+  trackEq();
   G.actor=nextToAct(bb);
   if(G.actor<0) return closeStreet();
   prompt();
@@ -488,6 +527,7 @@ function dealStreet(){
   G.street++; G.acts=[];
   var k=G.street===1?3:1; while(k--) G.board.push(G.deck.pop());
   G.log.push('— '+STREET_FA[G.street]+': '+G.board.map(cardTxt).join(' ')+' —');
+  trackEq();
   var can=0; P.forEach(function(p){ if(!p.folded&&!p.allin) can++; });
   if(can<=1){ G.runout=true; P.forEach(function(p){ if(!p.folded) p.shown=true; }); render(); return later(closeStreet,1500); }
   G.actor=nextToAct(T.dealer); prompt();
@@ -697,9 +737,9 @@ function cardTxt(c){ return RANK_CH[c>>2]+SUIT_CH[c&3]; }
 function $(id){ return document.getElementById(id); }
 function cardHTML(c,cls,delay){ var s=c&3; return '<span data-c="'+c+'" class="card '+(cls||'')+(s===1||s===2?' r':'')+'"'+(delay?' style="animation-delay:'+delay+'ms"':'')+'>'+RANK_CH[c>>2]+'<i>'+SUIT_CH[s]+'</i></span>'; }
 var SLOTS={1:[[50,9]],2:[[13,27],[87,27]],3:[[13,30],[50,9],[87,30]],4:[[10,62],[14,22],[86,22],[90,62]],5:[[10,64],[13,25],[50,9],[87,25],[90,64]]};
-var CX=50, CY=41, GR={good:'درست',ok:'قابل قبول',bad:'اشتباه'};
+var CX=50, CY=43, GR={good:'درست',ok:'قابل قبول',bad:'اشتباه'};
 function seatXY(i){ if(i===0) return [50,82]; return SLOTS[P.length-1][i-1]; }
-function betXY(i){ var xy=seatXY(i); return [xy[0]+(CX-xy[0])*.44, xy[1]+(CY-xy[1])*(i===0?.56:.44)+(xy[1]<20?10:0)]; }
+function betXY(i){ var xy=seatXY(i); if(i===0) return [27,74]; if(xy[1]<20) return [xy[0]-17,xy[1]+13]; return [xy[0]+(CX-xy[0])*.44, xy[1]+(CY-xy[1])*.44]; }
 function dbXY(i){ var xy=seatXY(i); return [xy[0]+(CX-xy[0])*.3+(i===0?18:xy[0]<50?5:-5), xy[1]+(CY-xy[1])*.3+(xy[1]<20?14:i===0?-1:-10)]; }
 function buildSeats(){
   var h='';
@@ -728,14 +768,12 @@ function render(){
   if(!$('seat0')) beginHandUI();
   var pot=potTotal(), inBets=0, i, best=null;
   P.forEach(function(p){ inBets+=p.bet; });
-  $('handNo').textContent=fa(T.handNo);
   $('net').textContent=(T.stats.net>0?'+':T.stats.net<0?'−':'')+money(Math.abs(T.stats.net)); $('net').style.color=T.stats.net<0?'var(--bad)':T.stats.net>0?'var(--good)':'';
   $('pot').innerHTML='<small>پات وسط</small>'+money(pot-inBets);
   $('potSub').textContent=inBets>0?'با شرط‌های این دور: '+money(pot):'';
   if(G.over&&G.result.showdown){ var w=null; G.result.pots.forEach(function(p){ if(!p.refund) w=p.winners[0]; }); if(w) best=bestFive(w.cards.concat(G.board)); }
   for(i=UI.shownBoard;i<G.board.length;i++){ var sl=$('bc'+i); if(sl){ sl.outerHTML=cardHTML(G.board[i],'in',(i-UI.shownBoard)*160).replace('<span ','<span id="bc'+i+'" '); } }
   UI.shownBoard=G.board.length;
-  $('street').textContent=STREET_FA[G.street]+(G.runout&&!G.over?' · همه آل‌این':'');
   var realAggr=G.aggr>=0&&G.raises>0&&!G.over;
   for(i=0;i<P.length;i++){
     var p=P[i], el=$('seat'+i), turn=G.actor===i&&!G.over;
@@ -774,7 +812,7 @@ function render(){
   renderFeed(); renderCoach(); renderCtl();
 }
 function renderFeed(){
-  var el=$('feed'), h='<span class="st">'+STREET_FA[G.street]+'</span>', sig=G.street+':'+G.acts.length+':'+G.actor+':'+G.over;
+  var el=$('feed'), h='<span class="st">دست '+fa(T.handNo)+' · '+STREET_FA[G.street]+(G.runout&&!G.over?' · همه آل‌این':'')+'</span>', sig=T.handNo+':'+G.street+':'+G.acts.length+':'+G.actor+':'+G.over+':'+G.runout;
   if(UI.feedSig===sig) return; UI.feedSig=sig;
   G.acts.forEach(function(a,k){ h+=(k?'<span class="ar">‹</span>':'')+'<span class="fa '+a.cls+'"'+(k<G.acts.length-1||UI.feedN===G.street+':'+G.acts.length?' style="animation:none"':'')+'><b>'+P[a.i].name+'</b> '+a.label+'</span>'; });
   UI.feedN=G.street+':'+G.acts.length;
@@ -796,8 +834,7 @@ function adviceHTML(A){
   h+='<div class="row"><span>شانس برد در برابر '+fa(A.nOpp)+' حریف</span><span>'+pc(A.eq)+'</span></div>';
   if(A.toCall>0) h+='<div class="row"><span>پات آدز: '+money(A.toCall)+' بدهی تا '+money(A.pot)+' ببری</span><span>حداقل '+pc(A.po)+'</span></div>';
   if(A.outs&&A.outs.n>0&&A.street<3) h+='<div class="row"><span>اوت (کارت‌هایی که دستت را بهتر می‌کنند)</span><span>'+fa(A.outs.n)+' کارت ≈ '+fa(Math.min(95,A.outs.n*(A.street===1?4:2)))+'٪</span></div>';
-  h+='<div class="rec">پیشنهاد: <em>'+rec+'</em>'+(A.marginal?' <span class="lite">(مرزی)</span>':'')+'</div><p>'+A.why+'</p>';
-  return h;
+  return '<div class="rec" style="margin:0 0 4px">پیشنهاد: <em>'+rec+'</em>'+(A.marginal?' <span class="lite">(مرزی)</span>':'')+'</div><p>'+A.why+'</p>'+h;
 }
 function renderCoach(){
   if(!HAS_DOM) return;
@@ -829,7 +866,7 @@ function renderCtl(){
   var L=legal(0), pot=potTotal(), h='';
   UI.ctlSig='hero';
   if(L.canRaise){
-    if(!UI.raiseTo||UI.raiseTo<L.minTo||UI.raiseTo>L.maxTo) UI.raiseTo=Math.min(L.maxTo,Math.max(L.minTo,G.street===0?(G.raises?r10(G.curBet*3):r10(BB*2.5+G.limpers*BB)):P[0].bet+r10(pot*.66)));
+    if(!UI.raiseTo||UI.raiseTo<L.minTo||UI.raiseTo>L.maxTo) UI.raiseTo=Math.min(L.maxTo,Math.max(L.minTo,G.street===0?(G.raises?r10(G.curBet*3):r10(BB*(2.5+G.limpers)+(G.pos[0]==='SB'?BB*.5:0))):P[0].bet+r10(pot*.66)));
     h+='<div id="sizing"><div id="presets"><button data-f="min" type="button">حداقل</button><button data-f="0.5" type="button">نصف پات</button><button data-f="0.66" type="button">⅔ پات</button><button data-f="1" type="button">پات</button><button data-f="max" type="button">آل‌این</button></div>'+
        '<div id="sliderRow"><input id="slider" type="range" min="'+L.minTo+'" max="'+L.maxTo+'" step="'+SB+'" value="'+UI.raiseTo+'" aria-label="مقدار شرط"><output id="amt"></output></div></div>';
   }
@@ -897,6 +934,7 @@ function showEnd(){
       h+='<p>اگر مانده بودی «'+describe(hs)+'» می‌شدی و '+(hs>top.score?'می‌بردی':hs===top.score?'مساوی می‌کردی':'می‌باختی')+'. ولی تصمیم را با اطلاعات همان لحظه بسنج، نه با کارت‌هایی که بعداً آمد.</p>';
     }
   }
+  h+=trackHTML();
   h+='<h4>مرور تصمیم‌های تو</h4>';
   if(!G.review.length) h+='<p class="lite">در این دست تصمیمی نگرفتی.</p>';
   var bad=0;
@@ -914,12 +952,50 @@ function showEnd(){
   if(hero.stack<BB) h+='<p class="lite">چیپت تمام شد. دست بعد با ۲٬۰۰۰ چیپ تازه شروع می‌کنی؛ ضررش در آمارت می‌ماند.</p>';
   h+='<details><summary>روند کامل دست</summary>'+G.log.join('<br>')+'</details>';
   $('endBody').innerHTML=h; $('endBody').scrollTop=0; $('endSheet').hidden=false;
+  clearInterval(UI.autoT); $('nextBtn').textContent='دست بعدی';
+  if(S.auto){ var left=9, hand=G;
+    var stop=function(){ clearInterval(UI.autoT); $('nextBtn').textContent='دست بعدی'; };
+    $('endBody').ontouchstart=$('endBody').onmousedown=stop;
+    UI.autoT=setInterval(function(){ if(G!==hand||$('endSheet').hidden||!$('histSheet').hidden||!$('menuSheet').hidden||!$('guideSheet').hidden){ stop(); return; }
+      left--; $('nextBtn').textContent='دست بعدی ('+fa(left)+')'; if(left<=0){ stop(); $('endSheet').hidden=true; startHand(); } },1000);
+  }
+}
+function trackHTML(){
+  var tr=G.track, hero=P[0], sd=G.result.showdown&&!hero.folded, h='', opp=[];
+  if(!tr.length) return '';
+  if(sd) P.forEach(function(p){ if(!p.isHero&&!p.folded) opp.push(p.cards); });
+  h+='<h4>شانس بردت در طول دست</h4><table class="trk"><tr><th>مرحله</th><th>برآورد همان لحظه</th>'+(sd?'<th>واقعی، با کارت‌های آن‌ها</th>':'')+'</tr>';
+  var real=[];
+  tr.forEach(function(t){ var r=sd?equityKnown(hero.cards,opp,G.board.slice(0,t.s===0?0:t.s+2),600):null; real.push(r);
+    h+='<tr><td>'+STREET_FA[t.s]+' ('+fa(t.n)+' حریف)</td><td><b>'+pc(t.est)+'</b></td>'+(sd?'<td><b>'+pc(r)+'</b></td>':'')+'</tr>'; });
+  h+='</table>';
+  h+='<p class="lite">برآورد یعنی چیزی که با دیدن شرط‌ها می‌شد حدس زد.'+(sd?' واقعی یعنی در برابر کارت‌های کسانی که تا آخر ماندند.':'')+'</p>';
+  var d=null; tr.forEach(function(t){ if(!d&&t.s>0&&t.s<3&&(t.fl>=8||t.st>=4)) d=t; });
+  if(d){
+    var kind=d.fl>=8?'دراو فلاش':d.st>=8?'دراو استریت دوطرفه':'دراو استریت شکمی', n=d.fl>=8?d.fl:d.st, need=d.fl>=8?5:4;
+    var chance=Math.min(95,n*(d.s===1?4:2));
+    h+='<p>در '+STREET_FA[d.s]+' <b>'+kind+'</b> داشتی: '+fa(n)+' اوت، یعنی حدود '+fa(chance)+'٪ تا ریور. ';
+    if(hero.folded) h+='قبل از کامل شدن میز فولد دادی.';
+    else if(G.board.length<5) h+='دست قبل از ریور تمام شد.';
+    else if(catOf(evalHand(hero.cards.concat(G.board)))>=need) h+='دراوت نشست.';
+    else h+='ننشست. اگر قیمتِ کال‌هایت با این شانس می‌خواند، این بدشانسی است، نه اشتباه.';
+    h+='</p>';
+  }
+  if(sd&&real.length>1){ var k=real.length-1; if(tr[k].s===3) k--; var rv=real[k], net=G.result.net;
+    if(rv>=.65&&net<0) h+='<p><b>بدبیاری بود.</b> در '+STREET_FA[tr[k].s]+' با '+pc(rv)+' جلو بودی و کارتِ بعدی به ضررت آمد.</p>';
+    else if(rv<=.3&&net>0) h+='<p><b>این بار شانس آوردی.</b> در '+STREET_FA[tr[k].s]+' فقط '+pc(rv)+' شانس داشتی.</p>';
+  }
+  return h;
 }
 function recordHand(){
   var R=G.result, sum, w=null;
   R.pots.forEach(function(p){ if(!p.refund) w=p.winners[0]; });
   if(!R.showdown) sum=(w.isHero?'تو':w.name)+' بدون نشان دادن کارت برد';
   else sum=(w.isHero?'تو':w.name)+' با «'+describe(w.score)+'» برد';
+  var st=T.stats, hero=P[0], pz=G.pos[0]==='BTN/SB'?'BTN':G.pos[0];
+  if(!st.winBy) st.winBy={}; if(!st.pos) st.pos={};
+  if(!st.pos[pz]) st.pos[pz]=[0,0]; st.pos[pz][0]++; st.pos[pz][1]+=R.net;
+  if(R.net>0){ var wk=R.showdown?'c'+catOf(hero.score):'nf'; st.winBy[wk]=(st.winBy[wk]||0)+1; }
   T.history.push({no:T.handNo,net:R.net,cards:P[0].cards.slice(),board:G.board.slice(),rev:G.review,sum:sum});
   if(T.history.length>40) T.history.shift();
 }
@@ -971,6 +1047,67 @@ function viewDecision(hi,di){
   $('vPrev').onclick=function(){ var f=flat[pos-1]; viewDecision(f[0],f[1]); };
   $('vNext').onclick=function(){ var f=flat[pos+1]; viewDecision(f[0],f[1]); };
 }
+var GV={tab:0,pos:'',sel:'12-11s'};
+function hkey(r,c){ return r===c?r+'-'+c+'p':r>c?r+'-'+c+'s':c+'-'+r+'o'; }
+function hlabel(k){ var m=k.match(/(\d+)-(\d+)(.)/), ch=function(r){return +r===8?'T':RANK_CH[+r];}; return ch(m[1])+ch(m[2])+(m[3]==='p'?'':m[3]); }
+function tier(p){ return p<=.05?0:p<=.15?1:p<=.27?2:p<=.42?3:p<=.6?4:5; }
+function handCard(k){
+  var m=k.match(/(\d+)-(\d+)(.)/), hi=+m[1], lo=+m[2], t=m[3], e=EQ[k], p=PF[k], R=RANK_FA, gap=hi-lo-1;
+  var nm=t==='p'?'جفت '+R[hi]:R[hi]+' و '+R[lo]+(t==='s'?' همخال':' ناهمخال');
+  var open=['UTG','HJ','CO','BTN','SB'].filter(function(x){return p<=OPEN[x];});
+  var vs=p<=.05?'دوباره ریز کن (تری‌بت)':(t==='p'||p<=.13)?'کال':p<=.24?'فقط از بلایند بزرگ کال، وگرنه فولد':'فولد';
+  var tip, flop;
+  if(t==='p'){ flop='حدود ۱۲٪ در فلاپ سه‌تایی (سِت) می‌شود'; tip=hi>=9?'جفت بزرگ. همیشه با ریز وارد شو و پات بساز؛ ولی اگر کارت بالاتر از جفتت روی میز آمد و شرط سنگین دیدی، محتاط شو.':'جفت کوچک یا متوسط. دنبال سه‌تایی هستی: ارزان فلاپ ببین، اگر نشست پات بزرگ ببر و اگر ننشست راحت رها کن.'; }
+  else {
+    flop='حدود ۳۲٪ در فلاپ دست‌کم یک جفت می‌شود'+(t==='s'?'؛ حدود ۱۱٪ هم دراو فلاش می‌گیرد':'');
+    if(hi===12&&t==='s') tip='آس همخال. می‌تواند بهترین فلاش را بسازد. با کیکر پایین، جفتِ آس به‌تنهایی دست بزرگی نیست.';
+    else if(lo>=8) tip='دو کارت بالا. جفتِ بالا با کیکر خوب می‌سازد.'+(t==='o'?' ناهمخالش در برابر ریز از جایگاه اول اغلب مغلوبِ دست بهتر است.':'');
+    else if(hi===12) tip='آس با کیکر ضعیف. وقتی آس می‌نشیند اغلب به آسی با کیکر بهتر می‌بازی؛ پات بزرگ با آن نساز.';
+    else if(t==='s'&&gap<=1&&hi>=4) tip='همخالِ پشت‌سرهم. استریت و فلاش می‌سازد و در جایگاه دیر و پات چندنفره ارزشش بالا می‌رود. بیشتر وقت‌ها فلاپ را از دست می‌دهد، پس ارزان بازی‌اش کن.';
+    else if(p<=.42) tip='دست مرزی. فقط از جایگاه دیر و وقتی کسی قبل از تو ریز نکرده بازی کن.';
+    else tip='دست ضعیف. حتی وقتی جفت می‌شود معمولاً کیکر بدی دارد. فولد بده، مگر در بلایند بزرگ که مجانی فلاپ می‌بینی.';
+  }
+  return '<div class="hcard"><h3><span dir="ltr">'+hlabel(k)+'</span> · '+nm+'</h3>'+
+    '<div class="kv"><span>رتبه بین ۱۶۹ دست</span><span>'+fa(RANK.indexOf(k)+1)+' · جزو '+pc(p)+' بالا</span></div>'+
+    '<div class="kv"><span>شانس برد تا آخر، در برابر ۱ حریف</span><span>'+pc(e[0])+'</span></div>'+
+    '<div class="kv"><span>در برابر ۲ حریف</span><span>'+pc(e[1])+'</span></div>'+
+    '<div class="kv"><span>در برابر ۵ حریف (میز کامل)</span><span>'+pc(e[2])+'</span></div>'+
+    '<div class="kv"><span>از کجا می‌شود با ریز بازش کرد</span><span dir="ltr">'+(open.length?open.join(' · '):'هیچ‌جا')+'</span></div>'+
+    '<div class="kv"><span>اگر قبل از تو ریز شده</span><span>'+vs+'</span></div>'+
+    '<p class="lite">'+flop+'.</p><p>'+tip+'</p></div>';
+}
+function showGuide(){
+  var h='<h2>راهنما</h2><div class="tabs"><button type="button" data-t="0" class="'+(GV.tab===0?'on':'')+'">جدول دست‌ها</button><button type="button" data-t="1" class="'+(GV.tab===1?'on':'')+'">درس‌ها</button></div>', r, c;
+  if(GV.tab===0){
+    h+='<p>هر خانه یک دستِ شروع است. بالای قطر همخال‌ها (s)، پایینش ناهمخال‌ها (o) و روی قطر جفت‌ها. روی هر خانه بزن.</p>';
+    h+='<div class="opt" style="border:0;padding:2px 0"><span>جایگاه</span><span class="seg" id="gPos">'+['','UTG','HJ','CO','BTN','SB'].map(function(p){return '<button type="button" data-p="'+p+'" class="'+(GV.pos===p?'on':'')+'" style="padding:5px 7px;font-size:11.5px">'+(p||'همه')+'</button>';}).join('')+'</span></div>';
+    if(GV.pos) h+='<p class="lite">خانه‌های پررنگ: دست‌هایی که از '+GV.pos+' ('+POS_FA[GV.pos]+') می‌شود با ریز باز کرد؛ حدود '+pc(OPEN[GV.pos])+' بالایی.</p>';
+    h+='<div class="grid">';
+    for(r=12;r>=0;r--) for(c=12;c>=0;c--){ var k=hkey(r,c), p=PF[k]; h+='<button type="button" data-k="'+k+'" class="t'+tier(p)+(GV.pos&&p>OPEN[GV.pos]?' dim':'')+(GV.sel===k?' sel':'')+'">'+hlabel(k)+'</button>'; }
+    h+='</div><div class="lgd"><span><i class="t0"></i>۵٪ بالا</span><span><i class="t1"></i>تا ۱۵٪</span><span><i class="t2"></i>تا ۲۷٪</span><span><i class="t3"></i>تا ۴۲٪</span><span><i class="t4"></i>تا ۶۰٪</span><span><i class="t5"></i>بقیه</span></div>';
+    h+=handCard(GV.sel);
+    h+='<p class="lite">شانس بردها از شبیه‌سازی ده‌ها هزار دست در برابر کارت‌های تصادفی آمده و فرض می‌کند همه تا آخر می‌مانند. رتبه ترکیبی از هر سه عدد است. درصدهای جایگاه یک نقطه‌ی شروعِ محافظه‌کارانه برای میز ۶ نفره‌اند، نه قانون قطعی.</p>';
+  } else {
+    h+='<h3 class="sec">۱. جایگاه مهم‌تر از کارت است</h3><p>هرچه دیرتر نوبتت باشد، اطلاعات بیشتری داری و دست‌های بیشتری را می‌شود بازی کرد.</p>'+
+      ['UTG','HJ','CO','BTN','SB'].map(function(p){return '<div class="kv"><span>'+p+' · '+POS_FA[p]+'</span><span>'+pc(OPEN[p])+' بالایی</span></div>';}).join('')+
+      '<p class="lite">BB بلایندش را گذاشته؛ اگر کسی ریز نکرد مجانی فلاپ می‌بیند و در برابر ریز با دست‌های بیشتری می‌تواند کال کند.</p>';
+    h+='<h3 class="sec">۲. ترتیب دست‌ها و اینکه چقدر پیش می‌آیند</h3><p class="lite">احتمال ساختن هر دست با هفت کارت تا ریور:</p>'+
+      [['استریت فلاش','۰٫۰۳٪'],['کاره','۰٫۱۷٪'],['فول هاوس','۲٫۶٪'],['فلاش','۳٪'],['استریت','۴٫۶٪'],['سه‌تایی','۴٫۸٪'],['دو جفت','۲۳٫۵٪'],['یک جفت','۴۳٫۸٪'],['کارت بالا','۱۷٫۴٪']].map(function(x){return '<div class="kv"><span>'+x[0]+'</span><span>'+x[1]+'</span></div>';}).join('');
+    h+='<h3 class="sec">۳. پات آدز: کال بدهم یا فولد؟</h3><p>مبلغ کال را بر پاتِ بعد از کال تقسیم کن. اگر شانس بردت از این عدد بیشتر است، کال در درازمدت سود دارد.</p><p><b>مثال:</b> پات ۱۵۰ است و باید ۵۰ بدهی. ۵۰ تقسیم بر ۲۰۰ می‌شود ۲۵٪. با دراو فلاش در فلاپ (حدود ۳۵٪ تا ریور) کال درست است؛ با یک شکمی (حدود ۱۷٪) نه.</p>';
+    h+='<h3 class="sec">۴. اوت و قانون ۴ و ۲</h3><p>اوت یعنی کارتی که دستت را می‌سازد. در فلاپ تعداد اوت را ضربدر ۴ کن (تا ریور)، در ترن ضربدر ۲.</p>'+
+      [['دراو فلاش · ۹ اوت','فلاپ ۳۵٪ · ترن ۲۰٪'],['استریت دوطرفه · ۸ اوت','فلاپ ۳۲٪ · ترن ۱۷٪'],['دو کارت بالاتر از میز · ۶ اوت','فلاپ ۲۴٪ · ترن ۱۳٪'],['استریت شکمی · ۴ اوت','فلاپ ۱۷٪ · ترن ۹٪'],['جفت به سه‌تایی · ۲ اوت','فلاپ ۸٪ · ترن ۴٪']].map(function(x){return '<div class="kv"><span>'+x[0]+'</span><span>'+x[1]+'</span></div>';}).join('');
+    h+='<h3 class="sec">۵. تصمیم خوب با نتیجه‌ی خوب فرق دارد</h3><p>اگر با ۳۵٪ شانس و قیمت درست کال کردی و ننشست، درست بازی کرده‌ای. اگر با ۱۰٪ کال کردی و نشست، بد بازی کرده‌ای و شانس آورده‌ای. در پایان هر دست جدول «شانس بردت در طول دست» همین را نشان می‌دهد.</p>';
+    h+='<h3 class="sec">۶. واژه‌ها</h3>'+
+      [['ریز (Raise)','بالا بردن شرط'],['کال','برابر کردن شرط'],['چک','رد کردن نوبت بدون شرط'],['لیمپ','ورود با کال به‌جای ریز؛ معمولاً ضعیف است'],['تری‌بت','ریز روی ریز'],['کیکر','کارت کناری که تساوی را می‌شکند'],['شودان','رو کردن کارت‌ها در پایان'],['VPIP','درصد دست‌هایی که واردشان شدی'],['PFR','درصد دست‌هایی که پیش از فلاپ ریز کردی']].map(function(x){return '<div class="kv"><span>'+x[0]+'</span><span style="font-weight:400">'+x[1]+'</span></div>';}).join('');
+  }
+  var body=$('guideBody'), keep=!$('guideSheet').hidden?body.scrollTop:0;
+  body.innerHTML=h; $('guideSheet').hidden=false; body.scrollTop=keep;
+  Array.prototype.forEach.call(body.querySelectorAll('.tabs button'),function(b){ b.onclick=function(){ GV.tab=+b.getAttribute('data-t'); body.scrollTop=0; showGuide(); }; });
+  if(GV.tab===0){
+    Array.prototype.forEach.call($('gPos').children,function(b){ b.onclick=function(){ GV.pos=b.getAttribute('data-p'); showGuide(); }; });
+    Array.prototype.forEach.call(body.querySelectorAll('.grid button'),function(b){ b.onclick=function(){ GV.sel=b.getAttribute('data-k'); showGuide(); }; });
+  }
+}
 function showHelp(){
   var k=function(txt,bg,fg){ return '<div class="k"><span style="background:'+bg+';color:'+fg+'">'+txt+'</span></div>'; };
   var h='<h2>میز چطور کار می‌کند</h2>'+
@@ -988,6 +1125,7 @@ function showMenu(){
   h+='<div class="opt"><span>تعداد حریف</span><span class="seg" id="oSeg">'+[1,2,3,4,5].map(function(n){return '<button type="button" data-n="'+n+'" class="'+(S.opps===n?'on':'')+'">'+fa(n)+'</button>';}).join('')+'</span></div>';
   h+='<div class="opt"><span>سرعت بازی</span><span class="seg" id="fSeg">'+['خیلی آهسته','آهسته','عادی','تند'].map(function(t,n){return '<button type="button" data-v="'+n+'" class="'+(S.speed===n?'on':'')+'">'+t+'</button>';}).join('')+'</span></div>';
   h+='<div class="opt"><span>مکث بعد از هر حرکت حریف</span><span class="seg" id="sSeg"><button type="button" data-v="1" class="'+(S.step?'on':'')+'">روشن</button><button type="button" data-v="0" class="'+(!S.step?'on':'')+'">خاموش</button></span></div>';
+  h+='<div class="opt"><span>رفتن خودکار به دست بعد (۹ ثانیه)</span><span class="seg" id="aSeg"><button type="button" data-v="1" class="'+(S.auto?'on':'')+'">روشن</button><button type="button" data-v="0" class="'+(!S.auto?'on':'')+'">خاموش</button></span></div>';
   h+='<div class="opt"><span>مربی</span><span class="seg" id="mSeg">'+['آموزش','بعد از حرکت','آخر دست'].map(function(t,n){return '<button type="button" data-v="'+n+'" class="'+(S.mode===n?'on':'')+'">'+t+'</button>';}).join('')+'</span></div>';
   h+='<p class="modeNote">'+['آموزش: قبل از تصمیم می‌توانی نظر مربی را ببینی و بعد از هر حرکت هم بازخورد می‌گیری.','بعد از حرکت: قبلش راهنمایی نیست. اول بازی می‌کنی، بلافاصله بعد از هر حرکت می‌گویم درست بود یا نه.','آخر دست: مربی حین بازی کاملاً ساکت است. تحلیل همه‌ی تصمیم‌ها آخر دست می‌آید و در تاریخچه می‌ماند.'][S.mode]+'</p>';
   if(S.mode===0) h+='<div class="opt"><span>نظر مربی قبل از تصمیم</span><span class="seg" id="hSeg"><button type="button" data-v="1" class="'+(S.autoHint?'on':'')+'">همیشه باز</button><button type="button" data-v="0" class="'+(!S.autoHint?'on':'')+'">وقتی خواستم</button></span></div>';
@@ -996,6 +1134,10 @@ function showMenu(){
     '<div><b>'+(dec?pc(st.good/dec):'—')+'</b>تصمیم درست</div><div><b>'+(dec?pc(st.bad/dec):'—')+'</b>تصمیم اشتباه</div>'+
     '<div><b>'+(st.hands?pc(st.vpip/st.hands):'—')+'</b>VPIP · هدف ۲۰ تا ۲۶٪</div><div><b>'+(st.hands?pc(st.pfr/st.hands):'—')+'</b>PFR · هدف ۱۶ تا ۲۲٪</div>'+
     '<div><b>'+(st.showdowns?pc(st.sdWon/st.showdowns):'—')+'</b>برد در شودان</div><div><b>'+fa(st.won)+'</b>دست سودده</div></div>';
+  var wb=st.winBy||{}, wk=Object.keys(wb).sort(function(x,y){return wb[y]-wb[x];});
+  if(wk.length){ h+='<h4>دست‌هایی که بردی، با چه چیزی</h4>'; wk.forEach(function(k){ h+='<div class="kv"><span>'+(k==='nf'?'بدون شودان (همه فولد دادند)':CAT_FA[+k.slice(1)])+'</span><span>'+fa(wb[k])+' بار</span></div>'; }); }
+  var ps=st.pos||{}, pk=['UTG','HJ','CO','BTN','SB','BB'].filter(function(k){return ps[k];});
+  if(pk.length){ h+='<h4>سود و ضرر به تفکیک جایگاه</h4>'; pk.forEach(function(k){ h+='<div class="kv"><span>'+k+' · '+fa(ps[k][0])+' دست</span><span style="direction:ltr;color:'+(ps[k][1]>0?'#1c7a4f':ps[k][1]<0?'#b23a3a':'inherit')+'">'+netTxt(ps[k][1])+'</span></div>'; }); }
   h+='<p class="lite">VPIP یعنی در چند درصد دست‌ها داوطلبانه پول گذاشتی و PFR یعنی در چند درصد پیش از فلاپ ریز کردی. اگر VPIP خیلی بالاتر از PFR باشد یعنی زیاد کال می‌کنی. شانس بردها تخمینی‌اند: با شبیه‌سازی هزاران دست و با توجه به شرط‌بندی حریف‌ها حساب می‌شوند.</p>';
   h+='<div class="opt"><span>راهنمای میز و علامت‌ها</span><span class="seg"><button type="button" id="helpBtn">باز کن</button></span></div>';
   h+='<div class="opt"><span>شروع دوباره با ۲٬۰۰۰ چیپ، آمار و تاریخچه‌ی صفر</span><span class="seg"><button type="button" id="resetBtn">ریست</button></span></div>';
@@ -1004,6 +1146,7 @@ function showMenu(){
   if($('hSeg')) Array.prototype.forEach.call($('hSeg').children,function(b){ b.onclick=function(){ S.autoHint=b.getAttribute('data-v')==='1'; save(); showMenu(); }; });
   Array.prototype.forEach.call($('mSeg').children,function(b){ b.onclick=function(){ S.mode=+b.getAttribute('data-v'); save(); showMenu(); if(G) renderCoach(); }; });
   $('helpBtn').onclick=function(){ $('menuSheet').hidden=true; showHelp(); };
+  Array.prototype.forEach.call($('aSeg').children,function(b){ b.onclick=function(){ S.auto=b.getAttribute('data-v')==='1'; save(); showMenu(); }; });
   Array.prototype.forEach.call($('sSeg').children,function(b){ b.onclick=function(){ S.step=b.getAttribute('data-v')==='1'; save(); showMenu(); if(!S.step&&UI.pending){ var f=UI.pending; UI.pending=null; f(); } }; });
   Array.prototype.forEach.call($('fSeg').children,function(b){ b.onclick=function(){ S.speed=+b.getAttribute('data-v'); save(); showMenu(); }; });
   $('resetBtn').onclick=function(){ T.stats=newStats(); T.history=[]; UI.pendingTable=true; $('resetBtn').textContent='انجام شد'; };
@@ -1015,6 +1158,8 @@ if(HAS_DOM){
   $('nextBtn').onclick=function(){ $('endSheet').hidden=true; startHand(); };
   $('menuBtn').onclick=showMenu;
   $('histBtn').onclick=showHist;
+  $('guideBtn').onclick=function(){ showGuide(); };
+  $('guideClose').onclick=function(){ $('guideSheet').hidden=true; };
   $('endHist').onclick=showHist;
   $('histClose').onclick=function(){ $('histSheet').hidden=true; };
   $('helpClose').onclick=function(){ $('helpSheet').hidden=true; if(!G){ S.seenHelp=true; save(); startHand(); } };
