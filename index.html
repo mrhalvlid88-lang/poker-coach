@@ -394,7 +394,7 @@ var BOTS=[
   {name:'نگار',tag:'خیلی سفت',loose:.6,aggr:.45,bluff:.03,sticky:-.03},
   {name:'بهرام',tag:'متعادل',loose:1.1,aggr:.6,bluff:.15,sticky:0}
 ];
-var S={opps:5,autoHint:false,speed:1,seenHelp:false,mode:0};
+var S={opps:5,autoHint:false,speed:1,seenHelp:false,mode:0,step:false};
 var T={players:[],dealer:-1,handNo:0,stats:null,history:[]};
 var P=[], G=null;
 var UI={advice:null,hintOpen:false,feedback:null,raiseTo:0,shownBoard:0,n:0,prevBet:[],cardKey:[],actTxt:[],turnKey:'',paid:false};
@@ -405,7 +405,7 @@ function setupTable(){
   for(var i=0;i<S.opps;i++){ var b=BOTS[i]; T.players.push({name:b.name,style:b,stack:START}); }
   T.dealer=-1; P=T.players;
 }
-function spd(){ return [1.6,1,.45][S.speed]*((G&&P[0].folded&&!G.over)?.5:1); }
+function spd(){ return ([2.6,1.7,1.1,.5][S.speed]||1.7)*((G&&P[0].folded&&!G.over)?.85:1); }
 function later(fn,ms){ if(AUTO) QUEUE.push(fn); else setTimeout(fn,ms*spd()); }
 function potTotal(){ var s=0; for(var i=0;i<P.length;i++) s+=P[i].total; return s; }
 function post(i,amt){ var p=P[i], a=Math.min(amt,p.stack); p.stack-=a; p.bet+=a; p.total+=a; if(p.stack===0) p.allin=true; return a; }
@@ -524,11 +524,10 @@ function prompt(){
   var p=P[G.actor];
   if(p.isHero&&!AUTO){ heroTurn(); return; }
   var i=G.actor, ms=950+Math.random()*700;
+  var go=function(){ var d=p.isHero?randomDecide(i):botDecide(i); doAct(i,d[0],d[1]); };
+  if(HAS_DOM&&!AUTO&&S.step){ G.thinkMs=1; UI.pending=go; render(); return; }
   G.thinkMs=ms*spd(); render();
-  later(function(){
-    var d=p.isHero?randomDecide(i):botDecide(i);
-    doAct(i,d[0],d[1]);
-  }, ms);
+  later(go, ms);
 }
 function randomDecide(i){
   var L=legal(i), r=Math.random();
@@ -824,7 +823,9 @@ function renderCtl(){
   if(G.over){ if(UI.ctlSig!=='over'){ UI.ctlSig='over'; el.innerHTML='<div id="wait">دست تمام شد. تحلیل دست الان باز می‌شود…</div>'; } return; }
   if(G.actor!==0||P[0].folded){
     var msg=P[0].folded?'فولد دادی. ادامه‌ی دست را تماشا کن؛ از بازی بقیه هم می‌شود یاد گرفت.':G.runout?'همه آل‌این هستند؛ کارت‌ها رو می‌شوند…':G.actor>=0?P[G.actor].name+' دارد فکر می‌کند…':'شرط‌ها به پات وسط می‌روند…';
-    UI.ctlSig='w'; el.innerHTML='<div id="wait">'+msg+'</div>'; return; }
+    UI.ctlSig='w';
+    if(UI.pending&&G.actor>0){ el.innerHTML='<button class="big" id="stepBtn" type="button" style="margin-top:14px">ادامه: حرکتِ '+P[G.actor].name+'</button>'; $('stepBtn').onclick=function(){ var f=UI.pending; UI.pending=null; if(f) f(); }; return; }
+    el.innerHTML='<div id="wait">'+msg+'</div>'; return; }
   var L=legal(0), pot=potTotal(), h='';
   UI.ctlSig='hero';
   if(L.canRaise){
@@ -985,7 +986,8 @@ function showHelp(){
 function showMenu(){
   var st=T.stats, dec=st.good+st.ok+st.bad, h='<h2>تنظیمات و آمار</h2>';
   h+='<div class="opt"><span>تعداد حریف</span><span class="seg" id="oSeg">'+[1,2,3,4,5].map(function(n){return '<button type="button" data-n="'+n+'" class="'+(S.opps===n?'on':'')+'">'+fa(n)+'</button>';}).join('')+'</span></div>';
-  h+='<div class="opt"><span>سرعت بازی</span><span class="seg" id="fSeg">'+['آهسته','عادی','تند'].map(function(t,n){return '<button type="button" data-v="'+n+'" class="'+(S.speed===n?'on':'')+'">'+t+'</button>';}).join('')+'</span></div>';
+  h+='<div class="opt"><span>سرعت بازی</span><span class="seg" id="fSeg">'+['خیلی آهسته','آهسته','عادی','تند'].map(function(t,n){return '<button type="button" data-v="'+n+'" class="'+(S.speed===n?'on':'')+'">'+t+'</button>';}).join('')+'</span></div>';
+  h+='<div class="opt"><span>مکث بعد از هر حرکت حریف</span><span class="seg" id="sSeg"><button type="button" data-v="1" class="'+(S.step?'on':'')+'">روشن</button><button type="button" data-v="0" class="'+(!S.step?'on':'')+'">خاموش</button></span></div>';
   h+='<div class="opt"><span>مربی</span><span class="seg" id="mSeg">'+['آموزش','بعد از حرکت','آخر دست'].map(function(t,n){return '<button type="button" data-v="'+n+'" class="'+(S.mode===n?'on':'')+'">'+t+'</button>';}).join('')+'</span></div>';
   h+='<p class="modeNote">'+['آموزش: قبل از تصمیم می‌توانی نظر مربی را ببینی و بعد از هر حرکت هم بازخورد می‌گیری.','بعد از حرکت: قبلش راهنمایی نیست. اول بازی می‌کنی، بلافاصله بعد از هر حرکت می‌گویم درست بود یا نه.','آخر دست: مربی حین بازی کاملاً ساکت است. تحلیل همه‌ی تصمیم‌ها آخر دست می‌آید و در تاریخچه می‌ماند.'][S.mode]+'</p>';
   if(S.mode===0) h+='<div class="opt"><span>نظر مربی قبل از تصمیم</span><span class="seg" id="hSeg"><button type="button" data-v="1" class="'+(S.autoHint?'on':'')+'">همیشه باز</button><button type="button" data-v="0" class="'+(!S.autoHint?'on':'')+'">وقتی خواستم</button></span></div>';
@@ -1002,13 +1004,14 @@ function showMenu(){
   if($('hSeg')) Array.prototype.forEach.call($('hSeg').children,function(b){ b.onclick=function(){ S.autoHint=b.getAttribute('data-v')==='1'; save(); showMenu(); }; });
   Array.prototype.forEach.call($('mSeg').children,function(b){ b.onclick=function(){ S.mode=+b.getAttribute('data-v'); save(); showMenu(); if(G) renderCoach(); }; });
   $('helpBtn').onclick=function(){ $('menuSheet').hidden=true; showHelp(); };
+  Array.prototype.forEach.call($('sSeg').children,function(b){ b.onclick=function(){ S.step=b.getAttribute('data-v')==='1'; save(); showMenu(); if(!S.step&&UI.pending){ var f=UI.pending; UI.pending=null; f(); } }; });
   Array.prototype.forEach.call($('fSeg').children,function(b){ b.onclick=function(){ S.speed=+b.getAttribute('data-v'); save(); showMenu(); }; });
   $('resetBtn').onclick=function(){ T.stats=newStats(); T.history=[]; UI.pendingTable=true; $('resetBtn').textContent='انجام شد'; };
 }
-function rebuildTable(){ var st=T.stats; setupTable(); T.stats=st; T.handNo=0; UI.pendingTable=false; UI.n=0; G=null; $('seats').innerHTML=''; $('endSheet').hidden=true; save(); startHand(); }
+function rebuildTable(){ var st=T.stats; setupTable(); T.stats=st; T.handNo=0; UI.pendingTable=false; UI.pending=null; UI.n=0; G=null; $('seats').innerHTML=''; $('endSheet').hidden=true; save(); startHand(); }
 if(HAS_DOM){
   T.stats=newStats(); setupTable(); load(); P=T.players;
-  if(S.speed!==0&&S.speed!==1&&S.speed!==2) S.speed=1;
+  if([0,1,2,3].indexOf(S.speed)<0) S.speed=1;
   $('nextBtn').onclick=function(){ $('endSheet').hidden=true; startHand(); };
   $('menuBtn').onclick=showMenu;
   $('histBtn').onclick=showHist;
