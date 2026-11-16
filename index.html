@@ -437,7 +437,7 @@ var T={players:[],dealer:-1,handNo:0,stats:null,history:[]};
 var P=[], G=null;
 var UI={advice:null,hintOpen:false,feedback:null,raiseTo:0,shownBoard:0,n:0,prevBet:[],cardKey:[],actTxt:[],turnKey:'',paid:false};
 
-function newStats(){ return {hands:0,won:0,net:0,good:0,ok:0,bad:0,vpip:0,pfr:0,showdowns:0,sdWon:0,winBy:{},pos:{}}; }
+function newStats(){ return {hands:0,won:0,net:0,good:0,ok:0,bad:0,vpip:0,pfr:0,showdowns:0,sdWon:0,winBy:{},pos:{},bots:{},repNo:0}; }
 function setupTable(){
   T.players=[{name:'تو',isHero:true,stack:START}];
   for(var i=0;i<S.opps;i++){ var b=BOTS[i]; T.players.push({name:b.name,style:b,stack:START}); }
@@ -464,7 +464,7 @@ function startHand(){
   G={street:0,board:[],deck:deck,curBet:BB,minRaise:BB,actor:-1,over:false,log:[],review:[],raises:0,limpers:0,
      startStack:P[0].stack,vpip:false,pfr:false,result:null,runout:false,track:[]};
   P.forEach(function(p){ p.bet=0;p.total=0;p.folded=false;p.allin=false;p.acted=false;p.cards=[deck.pop(),deck.pop()];
-    p.top=1;p.agg=false;p.lastAct='';p.lastCls='';p.shown=false;p.score=0;p.won=0; });
+    p.top=1;p.agg=false;p.vp=false;p.pr=false;p.lastAct='';p.lastCls='';p.shown=false;p.score=0;p.won=0; });
   G.pos=positions();
   var n=P.length, sb=n===2?T.dealer:(T.dealer+1)%n, bb=(sb+1)%n;
   post(sb,SB); post(bb,BB); P[sb].lastAct='بلایند '+money(SB); P[bb].lastAct='بلایند '+money(BB);
@@ -493,14 +493,14 @@ function act(i,type,to){
   else if(type==='check'){ label='چک'; p.lastCls=''; }
   else if(type==='call'){
     post(i,L.toCall); label=(p.allin?'آل‌این ':'کال ')+money(L.toCall); p.lastCls='';
-    if(G.street===0){ if(G.raises===0) { G.limpers++; p.top=Math.min(p.top,.7); } else p.top=Math.min(p.top,.45); }
+    if(G.street===0){ p.vp=true; if(G.raises===0) { G.limpers++; p.top=Math.min(p.top,.7); } else p.top=Math.min(p.top,.45); }
   } else {
     to=Math.max(L.minTo,Math.min(L.maxTo,Math.round(to/SB)*SB)); if(to>L.maxTo-SB) to=L.maxTo;
     var inc=to-G.curBet, wasBet=G.curBet===0;
     post(i,to-p.bet); if(inc>=G.minRaise) G.minRaise=inc; G.curBet=to; G.raises++;
     P.forEach(function(q){ if(q!==p) q.acted=false; });
     label=p.allin?'آل‌این '+money(to):(wasBet?'بِت '+money(to):'ریز تا '+money(to)); p.lastCls='a-raise';
-    if(G.street===0) p.top=Math.min(p.top, G.raises===1?.25:G.raises===2?.08:.04); else p.agg=true;
+    if(G.street===0){ p.vp=true; p.pr=true; p.top=Math.min(p.top, G.raises===1?.25:G.raises===2?.08:.04); } else p.agg=true;
   }
   p.acted=true; p.lastAct=label; G.log.push(p.name+': '+label);
   G.acts.push({i:i,label:label,cls:p.lastCls}); if(type==='raise') G.aggr=i;
@@ -751,6 +751,7 @@ function buildSeats(){
   var d=dbXY(Math.max(0,T.dealer));
   h+='<div class="dbtn" id="dbtn" style="left:'+d[0]+'%;top:'+d[1]+'%">D</div>';
   $('seats').innerHTML=h; UI.n=P.length;
+  P.forEach(function(p,k){ if(k>0) $('seat'+k).onclick=function(){ GV.tab=2; GV.who=p.name; showGuide(); }; });
 }
 function beginHandUI(){
   if(UI.n!==P.length||!$('seat0')) buildSeats();
@@ -839,9 +840,9 @@ function adviceHTML(A){
 function renderCoach(){
   if(!HAS_DOM) return;
   var el=$('coach'), heroTurnNow=G.actor===0&&!G.over&&!P[0].folded, h='', m=S.mode, fb=UI.feedback;
-  var off='<span class="lite">مربی خاموش است. خودت تصمیم بگیر؛ تحلیل کامل آخر دست می‌آید و در «تاریخچه» می‌ماند.</span>';
+  var off='<span class="lite">'+(m===3?'مربی خاموش است و عادی بازی می‌کنی. بعد از هر ۶ دست یک گزارش از تصمیم‌هایت می‌گیری.':'مربی خاموش است. خودت تصمیم بگیر؛ تحلیل کامل آخر دست می‌آید و در «تاریخچه» می‌ماند.')+'</span>';
   el.className='';
-  if(m===2) h=off;
+  if(m>=2) h=off;
   else if(heroTurnNow){
     h+='<div style="display:flex;align-items:center;gap:10px;justify-content:space-between"><span class="sit">'+situation()+'</span>'+(m===0&&!UI.hintOpen?'<button class="hintBtn" id="hintBtn" type="button">نظر مربی</button>':'')+'</div>';
     if(m===0&&UI.hintOpen) h+='<h3>نظر مربی</h3>'+(UI.advice?adviceHTML(UI.advice):'<p class="lite">در حال حساب کردن…</p>');
@@ -934,6 +935,9 @@ function showEnd(){
       h+='<p>اگر مانده بودی «'+describe(hs)+'» می‌شدی و '+(hs>top.score?'می‌بردی':hs===top.score?'مساوی می‌کردی':'می‌باختی')+'. ولی تصمیم را با اطلاعات همان لحظه بسنج، نه با کارت‌هایی که بعداً آمد.</p>';
     }
   }
+  var rep=S.mode===3, since=T.handNo-(T.stats.repNo||0);
+  if(rep){ UI.repDue=since>=6; h+='<div class="verdict">'+(UI.repDue?'۶ دست بازی کردی. گزارش تصمیم‌هایت آماده است.':'تحلیل این دست در گزارش می‌آید؛ '+fa(6-since)+' دست تا گزارش بعدی.')+'</div>'; $('endBody').innerHTML=h; h=''; }
+  else UI.repDue=false;
   h+=trackHTML();
   h+='<h4>مرور تصمیم‌های تو</h4>';
   if(!G.review.length) h+='<p class="lite">در این دست تصمیمی نگرفتی.</p>';
@@ -951,10 +955,12 @@ function showEnd(){
   if(v) h+='<div class="verdict">'+v+'</div>';
   if(hero.stack<BB) h+='<p class="lite">چیپت تمام شد. دست بعد با ۲٬۰۰۰ چیپ تازه شروع می‌کنی؛ ضررش در آمارت می‌ماند.</p>';
   h+='<details><summary>روند کامل دست</summary>'+G.log.join('<br>')+'</details>';
-  $('endBody').innerHTML=h; $('endBody').scrollTop=0; $('endSheet').hidden=false;
-  clearInterval(UI.autoT); $('nextBtn').textContent='دست بعدی';
-  if(S.auto){ var left=9, hand=G;
-    var stop=function(){ clearInterval(UI.autoT); $('nextBtn').textContent='دست بعدی'; };
+  if(!rep) $('endBody').innerHTML=h;
+  $('endBody').scrollTop=0; $('endSheet').hidden=false;
+  var nb=UI.repDue?'دیدن گزارش ۶ دست':'دست بعدی';
+  clearInterval(UI.autoT); $('nextBtn').textContent=nb;
+  if(S.auto&&!UI.repDue){ var left=9, hand=G;
+    var stop=function(){ clearInterval(UI.autoT); $('nextBtn').textContent=nb; };
     $('endBody').ontouchstart=$('endBody').onmousedown=stop;
     UI.autoT=setInterval(function(){ if(G!==hand||$('endSheet').hidden||!$('histSheet').hidden||!$('menuSheet').hidden||!$('guideSheet').hidden){ stop(); return; }
       left--; $('nextBtn').textContent='دست بعدی ('+fa(left)+')'; if(left<=0){ stop(); $('endSheet').hidden=true; startHand(); } },1000);
@@ -996,8 +1002,37 @@ function recordHand(){
   if(!st.winBy) st.winBy={}; if(!st.pos) st.pos={};
   if(!st.pos[pz]) st.pos[pz]=[0,0]; st.pos[pz][0]++; st.pos[pz][1]+=R.net;
   if(R.net>0){ var wk=R.showdown?'c'+catOf(hero.score):'nf'; st.winBy[wk]=(st.winBy[wk]||0)+1; }
+  if(!st.bots) st.bots={};
+  P.forEach(function(p){ if(p.isHero) return; var bb=st.bots[p.name]||(st.bots[p.name]=[0,0,0]); bb[0]++; if(p.vp) bb[1]++; if(p.pr) bb[2]++; });
   T.history.push({no:T.handNo,net:R.net,cards:P[0].cards.slice(),board:G.board.slice(),rev:G.review,sum:sum});
   if(T.history.length>40) T.history.shift();
+}
+function showReport(){
+  var st=T.stats, H=T.history, from=st.repNo||0, hs=[], g=0,o=0,b=0,emo=0,fear=0,tilt=0, net=0, won=0, bads=[];
+  H.forEach(function(x,hi){ if(x.no<=from) return; hs.push(x); net+=x.net; if(x.net>0) won++;
+    var prev=H[hi-1], afterLoss=prev&&prev.no===x.no-1&&prev.net<=-100;
+    x.rev.forEach(function(r,di){ if(r.grade==='good') g++; else if(r.grade==='ok') o++; else { b++; bads.push([hi,di,x,r]);
+      if(r.t==='call'||r.t==='raise'){ emo++; if(afterLoss) tilt++; } else fear++; } }); });
+  var tot=g+o+b, pp=function(n){ return tot?pc(n/tot):'—'; };
+  var h='<h2>گزارش '+fa(hs.length)+' دست اخیر</h2>';
+  h+='<div class="stat"><div><b>'+pp(g)+'</b>تصمیم درست ('+fa(g)+' از '+fa(tot)+')</div><div><b>'+pp(o)+'</b>قابل قبول</div>'+
+     '<div><b style="color:#b23a3a">'+pp(emo)+'</b>هیجانی ('+fa(emo)+')</div><div><b style="color:#9a6a00">'+pp(fear)+'</b>از سر ترس ('+fa(fear)+')</div>'+
+     '<div><b style="direction:ltr;text-align:right">'+netTxt(net)+'</b>سود و ضرر</div><div><b>'+fa(won)+' از '+fa(hs.length)+'</b>دست سودده</div></div>';
+  h+='<p class="lite">هیجانی یعنی کال یا ریزی که عددها پشتش نبود. از سر ترس یعنی فولد یا چکی که عددها می‌گفتند باید می‌ماندی یا شرط می‌بستی.</p>';
+  var v;
+  if(!tot) v='در این دست‌ها تصمیمی ثبت نشد.';
+  else if(!b) v='هیچ تصمیم اشتباهی نداشتی. اگر نتیجه بد بود، از کارت بود نه از بازی‌ات.';
+  else if(emo>=fear){ v='بیشترِ اشتباه‌هایت از هیجان بود: با دستی وارد شدی یا پول گذاشتی که ارزشش را نداشت. قبل از هر کال از خودت بپرس «چند درصد شانس دارم و چقدر باید بدهم؟»';
+    if(tilt) v+=' '+fa(tilt)+' تا از این‌ها درست بعد از یک باخت سنگین بود؛ این نشانه‌ی تیلت است. بعد از باخت، یک دست را فقط تماشا کن.'; }
+  else v='بیشترِ اشتباه‌هایت از احتیاط زیاد بود: دست‌هایی را رها کردی یا شرط نبستی که عددها پشتشان بود. به پات آدز اعتماد کن؛ فولدِ دستِ خوب هم پول از دست دادن است.';
+  if(net<0&&tot&&b===0) v+=' باخت این دوره واریانس است.';
+  if(net>0&&b>=2) v+=' این دوره سود کردی، ولی با این تعداد اشتباه، سودت به شانس وابسته بوده.';
+  h+='<div class="verdict">'+v+'</div>';
+  if(bads.length){ h+='<h4>تصمیم‌های اشتباه؛ روی هر کدام بزن تا صحنه را ببینی</h4>';
+    bads.forEach(function(x,k){ h+='<button class="hl" type="button" data-k="'+k+'"><span class="n">دست '+fa(x[2].no)+'</span><span class="cs">'+cardHTML(x[2].cards[0],'sm')+cardHTML(x[2].cards[1],'sm')+'</span><span class="dots" style="display:block">'+STREET_FA[x[3].street]+' · '+x[3].label+' <span class="lite">('+((x[3].t==='call'||x[3].t==='raise')?'هیجانی':'ترس')+')</span></span></button>'; }); }
+  st.repNo=T.handNo; save(); UI.afterRep=true;
+  $('histBody').innerHTML=h; $('histBody').scrollTop=0; $('histSheet').hidden=false; $('histClose').textContent='دست بعدی';
+  Array.prototype.forEach.call($('histBody').querySelectorAll('.hl'),function(bn){ bn.onclick=function(){ var x=bads[+bn.getAttribute('data-k')]; viewDecision(x[0],x[1]); }; });
 }
 function netTxt(n){ return (n>0?'+':n<0?'−':'')+money(Math.abs(n)); }
 function showHist(){
@@ -1077,7 +1112,7 @@ function handCard(k){
     '<p class="lite">'+flop+'.</p><p>'+tip+'</p></div>';
 }
 function showGuide(){
-  var h='<h2>راهنما</h2><div class="tabs"><button type="button" data-t="0" class="'+(GV.tab===0?'on':'')+'">جدول دست‌ها</button><button type="button" data-t="1" class="'+(GV.tab===1?'on':'')+'">درس‌ها</button></div>', r, c;
+  var h='<h2>راهنما</h2><div class="tabs"><button type="button" data-t="0" class="'+(GV.tab===0?'on':'')+'">جدول دست‌ها</button><button type="button" data-t="1" class="'+(GV.tab===1?'on':'')+'">درس‌ها</button><button type="button" data-t="2" class="'+(GV.tab===2?'on':'')+'">بازیکن‌ها</button></div>', r, c;
   if(GV.tab===0){
     h+='<p>هر خانه یک دستِ شروع است. بالای قطر همخال‌ها (s)، پایینش ناهمخال‌ها (o) و روی قطر جفت‌ها. روی هر خانه بزن.</p>';
     h+='<div class="opt" style="border:0;padding:2px 0"><span>جایگاه</span><span class="seg" id="gPos">'+['','UTG','HJ','CO','BTN','SB'].map(function(p){return '<button type="button" data-p="'+p+'" class="'+(GV.pos===p?'on':'')+'" style="padding:5px 7px;font-size:11.5px">'+(p||'همه')+'</button>';}).join('')+'</span></div>';
@@ -1087,6 +1122,25 @@ function showGuide(){
     h+='</div><div class="lgd"><span><i class="t0"></i>۵٪ بالا</span><span><i class="t1"></i>تا ۱۵٪</span><span><i class="t2"></i>تا ۲۷٪</span><span><i class="t3"></i>تا ۴۲٪</span><span><i class="t4"></i>تا ۶۰٪</span><span><i class="t5"></i>بقیه</span></div>';
     h+=handCard(GV.sel);
     h+='<p class="lite">شانس بردها از شبیه‌سازی ده‌ها هزار دست در برابر کارت‌های تصادفی آمده و فرض می‌کند همه تا آخر می‌مانند. رتبه ترکیبی از هر سه عدد است. درصدهای جایگاه یک نقطه‌ی شروعِ محافظه‌کارانه برای میز ۶ نفره‌اند، نه قانون قطعی.</p>';
+  } else if(GV.tab===2){
+    var TY={'سارا':['محکم و تهاجمی (TAG)','دست‌های کمی بازی می‌کند ولی با همان‌ها محکم شرط می‌بندد. ریزش معمولاً دست واقعی است و بعد از فلاپ ادامه می‌دهد.','به ریزهایش احترام بگذار و با دست متوسط درگیر نشو. از جایگاه دیر بلایندش را بدزد؛ اگر جواب داد، رها کن.'],
+      'کاوه':['شل و کال‌کن (Calling Station)','با دست‌های زیادی وارد می‌شود و تا آخر کال می‌کند. خیلی کم ریز می‌دهد و تقریباً هیچ‌وقت بلوف نمی‌زند؛ پس وقتی ریز داد، دستش قوی است.','به او بلوف نزن، چون فولد نمی‌دهد. با دست خوب بزرگ‌تر از معمول شرط ببند؛ او می‌پردازد.'],
+      'مانی':['بی‌پروا و بلوف‌زن (Maniac)','زیاد ریز می‌دهد و زیاد بلوف می‌زند. ریزش الزاماً دست قوی نیست و شرط‌های بزرگش گاهی خالی است.','با جفتِ خوب یا بهتر کال کن و بگذار خودش پول وسط بگذارد. با دست ضعیف وارد جنگِ ریز با او نشو؛ نوسانت بالا می‌رود.'],
+      'نگار':['خیلی سفت (Nit)','فقط با بهترین دست‌ها وارد می‌شود. ریزش یعنی دست قوی؛ ری‌ریزش تقریباً همیشه جفت بالا یا آس‌شاه است.','بلایندش را زیاد بدزد. هر وقت مقاومت کرد یا شرط بست، بدون دست خیلی قوی فولد بده.'],
+      'بهرام':['متعادل','نزدیک به بازی استاندارد: نه خیلی سفت، نه خیلی شل، با بلوفِ به‌اندازه.','ضعف مشخصی ندارد. جلویش همان بازی درستِ عددی را بکن و جایگاه را جدی بگیر.']};
+    h+='<p>هر حریف سبک ثابتی دارد. معنیِ ریز به این بستگی دارد که <b>چه کسی</b> و <b>از کجا</b> ریز داده.</p>';
+    BOTS.forEach(function(bt,k){ var ty=TY[bt.name], s=(T.stats.bots||{})[bt.name], three=.045*bt.loose*(.6+bt.aggr);
+      h+='<div class="hcard" id="pt'+k+'"'+(GV.who===bt.name?' style="outline:2px solid var(--brass)"':'')+'><h3>'+bt.name+' · '+ty[0]+'</h3><p>'+ty[1]+'</p>'+
+        '<div class="kv"><span>از جایگاه اول (UTG) وارد می‌شود با</span><span>حدود '+pc(Math.min(1,OPEN.UTG*bt.loose))+' بالای دست‌ها</span></div>'+
+        '<div class="kv"><span>از دیلر (BTN) وارد می‌شود با</span><span>حدود '+pc(Math.min(1,OPEN.BTN*bt.loose))+' بالا</span></div>'+
+        '<div class="kv"><span>وقتی وارد می‌شود، با ریز است</span><span>حدود '+pc(.5+.5*bt.aggr)+' مواقع</span></div>'+
+        '<div class="kv"><span>ری‌ریز (تری‌بت)</span><span>حدود '+pc(three)+' بالا</span></div>'+
+        '<div class="kv"><span>بلوف بعد از فلاپ</span><span>'+(bt.bluff>=.25?'زیاد':bt.bluff>=.1?'گاهی':'تقریباً هیچ‌وقت')+'</span></div>'+
+        (s&&s[0]>=5?'<div class="kv"><span>در میز تو تا حالا ('+fa(s[0])+' دست)</span><span>وارد شده '+pc(s[1]/s[0])+' · ریز داده '+pc(s[2]/s[0])+'</span></div>':'')+
+        '<p><b>چطور جلویش بازی کنی:</b> '+ty[2]+'</p></div>'; });
+    h+='<h3 class="sec">ریز در چه حالتی چه معنی دارد</h3>'+
+      [['ریز از جایگاه اول','رنج قوی؛ محتاط باش'],['ریز از دیلر یا یکی مانده به دیلر','رنج گشاد؛ می‌تواند دزدیِ بلایند باشد'],['ری‌ریز (تری‌بت)','خیلی قوی، مگر از بازیکن بی‌پروا'],['لیمپ و بعد کالِ ریز','دست متوسط یا دراو، کم‌تر دست بزرگ'],['چک و بعد ریز روی شرط تو','معمولاً دست خیلی قوی'],['شرط بزرگ در ریور از بازیکنِ کم‌شرط','تقریباً همیشه دست قوی؛ فولدِ دست متوسط درست است'],['شرط کوچک بعد از چک‌های پیاپی','اغلب دست متوسط یا تلاش برای ارزان دیدن']].map(function(x){return '<div class="kv"><span>'+x[0]+'</span><span style="font-weight:400;max-width:55%">'+x[1]+'</span></div>';}).join('');
+    h+='<p class="lite">درصدها از تنظیمات واقعیِ همین حریف‌ها می‌آید. بازیکن واقعی سبکش را عوض می‌کند؛ این الگوها نقطه‌ی شروع‌اند. روی صندلی هر حریف در میز بزنی، همین کارت باز می‌شود.</p>';
   } else {
     h+='<h3 class="sec">۱. جایگاه مهم‌تر از کارت است</h3><p>هرچه دیرتر نوبتت باشد، اطلاعات بیشتری داری و دست‌های بیشتری را می‌شود بازی کرد.</p>'+
       ['UTG','HJ','CO','BTN','SB'].map(function(p){return '<div class="kv"><span>'+p+' · '+POS_FA[p]+'</span><span>'+pc(OPEN[p])+' بالایی</span></div>';}).join('')+
@@ -1102,6 +1156,7 @@ function showGuide(){
   }
   var body=$('guideBody'), keep=!$('guideSheet').hidden?body.scrollTop:0;
   body.innerHTML=h; $('guideSheet').hidden=false; body.scrollTop=keep;
+  if(GV.tab===2&&GV.who){ BOTS.forEach(function(bt,k){ if(bt.name===GV.who&&$('pt'+k)) body.scrollTop=$('pt'+k).offsetTop-70; }); GV.who=''; }
   Array.prototype.forEach.call(body.querySelectorAll('.tabs button'),function(b){ b.onclick=function(){ GV.tab=+b.getAttribute('data-t'); body.scrollTop=0; showGuide(); }; });
   if(GV.tab===0){
     Array.prototype.forEach.call($('gPos').children,function(b){ b.onclick=function(){ GV.pos=b.getAttribute('data-p'); showGuide(); }; });
@@ -1126,8 +1181,8 @@ function showMenu(){
   h+='<div class="opt"><span>سرعت بازی</span><span class="seg" id="fSeg">'+['خیلی آهسته','آهسته','عادی','تند'].map(function(t,n){return '<button type="button" data-v="'+n+'" class="'+(S.speed===n?'on':'')+'">'+t+'</button>';}).join('')+'</span></div>';
   h+='<div class="opt"><span>مکث بعد از هر حرکت حریف</span><span class="seg" id="sSeg"><button type="button" data-v="1" class="'+(S.step?'on':'')+'">روشن</button><button type="button" data-v="0" class="'+(!S.step?'on':'')+'">خاموش</button></span></div>';
   h+='<div class="opt"><span>رفتن خودکار به دست بعد (۹ ثانیه)</span><span class="seg" id="aSeg"><button type="button" data-v="1" class="'+(S.auto?'on':'')+'">روشن</button><button type="button" data-v="0" class="'+(!S.auto?'on':'')+'">خاموش</button></span></div>';
-  h+='<div class="opt"><span>مربی</span><span class="seg" id="mSeg">'+['آموزش','بعد از حرکت','آخر دست'].map(function(t,n){return '<button type="button" data-v="'+n+'" class="'+(S.mode===n?'on':'')+'">'+t+'</button>';}).join('')+'</span></div>';
-  h+='<p class="modeNote">'+['آموزش: قبل از تصمیم می‌توانی نظر مربی را ببینی و بعد از هر حرکت هم بازخورد می‌گیری.','بعد از حرکت: قبلش راهنمایی نیست. اول بازی می‌کنی، بلافاصله بعد از هر حرکت می‌گویم درست بود یا نه.','آخر دست: مربی حین بازی کاملاً ساکت است. تحلیل همه‌ی تصمیم‌ها آخر دست می‌آید و در تاریخچه می‌ماند.'][S.mode]+'</p>';
+  h+='<div class="opt" style="flex-wrap:wrap"><span>مربی</span><span class="seg" id="mSeg" style="flex-wrap:wrap;justify-content:flex-end">'+['آموزش','بعد از حرکت','آخر دست','گزارش ۶ دستی'].map(function(t,n){return '<button type="button" data-v="'+n+'" class="'+(S.mode===n?'on':'')+'">'+t+'</button>';}).join('')+'</span></div>';
+  h+='<p class="modeNote">'+['آموزش: قبل از تصمیم می‌توانی نظر مربی را ببینی و بعد از هر حرکت هم بازخورد می‌گیری.','بعد از حرکت: قبلش راهنمایی نیست. اول بازی می‌کنی، بلافاصله بعد از هر حرکت می‌گویم درست بود یا نه.','آخر دست: مربی حین بازی کاملاً ساکت است. تحلیل همه‌ی تصمیم‌ها آخر دست می‌آید و در تاریخچه می‌ماند.','گزارش ۶ دستی: عادی بازی می‌کنی و هیچ تحلیلی نمی‌بینی. بعد از هر ۶ دست گزارشی می‌آید که چند درصد تصمیم‌هایت درست، هیجانی یا از سر ترس بوده.'][S.mode]+'</p>';
   if(S.mode===0) h+='<div class="opt"><span>نظر مربی قبل از تصمیم</span><span class="seg" id="hSeg"><button type="button" data-v="1" class="'+(S.autoHint?'on':'')+'">همیشه باز</button><button type="button" data-v="0" class="'+(!S.autoHint?'on':'')+'">وقتی خواستم</button></span></div>';
   h+='<h4>آمار تو</h4><div class="stat">'+
     '<div><b>'+fa(st.hands)+'</b>دست بازی‌شده</div><div><b style="direction:ltr;text-align:right">'+(st.net>0?'+':st.net<0?'−':'')+money(Math.abs(st.net))+'</b>سود و ضرر کل</div>'+
@@ -1144,7 +1199,7 @@ function showMenu(){
   $('menuBody').innerHTML=h; $('menuSheet').hidden=false;
   Array.prototype.forEach.call($('oSeg').children,function(b){ b.onclick=function(){ var n=+b.getAttribute('data-n'); if(n!==S.opps){ S.opps=n; UI.pendingTable=true; } showMenu(); }; });
   if($('hSeg')) Array.prototype.forEach.call($('hSeg').children,function(b){ b.onclick=function(){ S.autoHint=b.getAttribute('data-v')==='1'; save(); showMenu(); }; });
-  Array.prototype.forEach.call($('mSeg').children,function(b){ b.onclick=function(){ S.mode=+b.getAttribute('data-v'); save(); showMenu(); if(G) renderCoach(); }; });
+  Array.prototype.forEach.call($('mSeg').children,function(b){ b.onclick=function(){ S.mode=+b.getAttribute('data-v'); if(S.mode===3) T.stats.repNo=T.handNo; save(); showMenu(); if(G) renderCoach(); }; });
   $('helpBtn').onclick=function(){ $('menuSheet').hidden=true; showHelp(); };
   Array.prototype.forEach.call($('aSeg').children,function(b){ b.onclick=function(){ S.auto=b.getAttribute('data-v')==='1'; save(); showMenu(); }; });
   Array.prototype.forEach.call($('sSeg').children,function(b){ b.onclick=function(){ S.step=b.getAttribute('data-v')==='1'; save(); showMenu(); if(!S.step&&UI.pending){ var f=UI.pending; UI.pending=null; f(); } }; });
@@ -1155,13 +1210,13 @@ function rebuildTable(){ var st=T.stats; setupTable(); T.stats=st; T.handNo=0; U
 if(HAS_DOM){
   T.stats=newStats(); setupTable(); load(); P=T.players;
   if([0,1,2,3].indexOf(S.speed)<0) S.speed=1;
-  $('nextBtn').onclick=function(){ $('endSheet').hidden=true; startHand(); };
+  $('nextBtn').onclick=function(){ clearInterval(UI.autoT); if(UI.repDue){ UI.repDue=false; showReport(); return; } $('endSheet').hidden=true; startHand(); };
   $('menuBtn').onclick=showMenu;
   $('histBtn').onclick=showHist;
   $('guideBtn').onclick=function(){ showGuide(); };
   $('guideClose').onclick=function(){ $('guideSheet').hidden=true; };
   $('endHist').onclick=showHist;
-  $('histClose').onclick=function(){ $('histSheet').hidden=true; };
+  $('histClose').onclick=function(){ $('histSheet').hidden=true; $('histClose').textContent='برگشت به میز'; if(UI.afterRep){ UI.afterRep=false; $('endSheet').hidden=true; startHand(); } };
   $('helpClose').onclick=function(){ $('helpSheet').hidden=true; if(!G){ S.seenHelp=true; save(); startHand(); } };
   $('menuClose').onclick=function(){ $('menuSheet').hidden=true; if(UI.pendingTable) rebuildTable(); else if(G&&G.actor===0&&!G.over){ UI.hintOpen=S.mode===0&&(UI.hintOpen||S.autoHint); if(UI.hintOpen&&!UI.advice) UI.advice=coachAdvice(); renderCoach(); } };
   if(S.seenHelp) startHand(); else showHelp();
