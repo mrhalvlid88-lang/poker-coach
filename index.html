@@ -432,15 +432,25 @@ var BOTS=[
   {name:'نگار',tag:'خیلی سفت',loose:.6,aggr:.45,bluff:.03,sticky:-.03},
   {name:'بهرام',tag:'متعادل',loose:1.1,aggr:.6,bluff:.15,sticky:0}
 ];
-var S={opps:5,autoHint:false,speed:1,seenHelp:false,mode:0,step:false,auto:false};
-var T={players:[],dealer:-1,handNo:0,stats:null,history:[]};
+var S={opps:5,autoHint:false,speed:1,seenHelp:false,mode:0,step:false,auto:false,anon:true};
+var T={players:[],dealer:-1,handNo:0,stats:null,history:[],adapt:{fr:0,ff:0}};
+var NAMES=['سارا','کاوه','مانی','نگار','بهرام','آرش','لیلا','پویا','مینا','سینا','رویا','امید','ترانه','فرهاد','شیرین','کیان','نیما','هستی','بابک','یلدا','سام','پریا','داریوش','الناز'];
+function rr(a,b){ return a+Math.random()*(b-a); }
+function makeBot(i){
+  if(!S.anon){ var b=BOTS[i]; return {name:b.name,style:b,stack:START,seen:[0,0,0,0,0],life:1e9,tilt:0}; }
+  var w=[2,2,1,1.5,2], t=Math.random()*8.5, k=0; while(k<4&&t>w[k]){ t-=w[k]; k++; }
+  var a=BOTS[k], used=T.players.map(function(p){return p.name;}), nm;
+  do{ nm=NAMES[(Math.random()*NAMES.length)|0]; }while(used.indexOf(nm)>=0);
+  return {name:nm,style:{arch:k,tag:a.tag,loose:a.loose*rr(.8,1.2),aggr:Math.min(.95,a.aggr*rr(.8,1.2)),bluff:a.bluff*rr(.7,1.4),sticky:a.sticky+rr(-.02,.03)},stack:START,seen:[0,0,0,0,0],life:Math.round(rr(12,38)),tilt:0};
+}
+function exploit(){ var a=T.adapt; if(!a||a.fr<10) return 1; var r=a.ff/a.fr; return r>.65?1.5:r<.3?.55:1; }
 var P=[], G=null;
 var UI={advice:null,hintOpen:false,feedback:null,raiseTo:0,shownBoard:0,n:0,prevBet:[],cardKey:[],actTxt:[],turnKey:'',paid:false};
 
 function newStats(){ return {hands:0,won:0,net:0,good:0,ok:0,bad:0,vpip:0,pfr:0,showdowns:0,sdWon:0,winBy:{},pos:{},bots:{},repNo:0}; }
 function setupTable(){
   T.players=[{name:'تو',isHero:true,stack:START}];
-  for(var i=0;i<S.opps;i++){ var b=BOTS[i]; T.players.push({name:b.name,style:b,stack:START}); }
+  for(var i=0;i<S.opps;i++) T.players.push(makeBot(i));
   T.dealer=-1; P=T.players;
 }
 function spd(){ return ([2.6,1.7,1.1,.5][S.speed]||1.7)*((G&&P[0].folded&&!G.over)?.85:1); }
@@ -457,12 +467,24 @@ function positions(){
 }
 function startHand(){
   P=T.players;
-  P.forEach(function(p){ if(p.stack<BB||(!p.isHero&&p.stack>START*3)) p.stack=START; });
+  var note='';
+  P.forEach(function(p,i){
+    if(p.isHero){ if(p.stack<BB) p.stack=START; return; }
+    if(!S.anon){ if(p.stack<BB||p.stack>START*3) p.stack=START; p.cur=p.style; return; }
+    p.life--;
+    if(p.stack<BB||p.life<=0||p.stack>START*3){
+      var why=p.stack<BB?'همه‌ی چیپش را باخت و رفت':p.stack>START*3?'با برد از میز بلند شد':'میز را ترک کرد', nb=makeBot(i);
+      note+=(note?' ':'')+p.name+' '+why+'؛ '+nb.name+' جایش نشست.'; T.players[i]=nb; p=nb; UI.n=0;
+    }
+    var s=p.style, tl=p.tilt>0; if(tl) p.tilt--;
+    p.cur={loose:s.loose*rr(.82,1.22)*(tl?1.35:1),aggr:Math.min(.97,s.aggr*rr(.8,1.25)*(tl?1.25:1)),bluff:s.bluff*rr(.5,1.6)*exploit(),sticky:s.sticky+(tl?.06:0)};
+  });
+  P=T.players;
   T.dealer=(T.dealer+1)%P.length; T.handNo++;
   var deck=[]; for(var c=0;c<52;c++) deck.push(c);
   for(var i=51;i>0;i--){ var j=(Math.random()*(i+1))|0, t=deck[i]; deck[i]=deck[j]; deck[j]=t; }
   G={street:0,board:[],deck:deck,curBet:BB,minRaise:BB,actor:-1,over:false,log:[],review:[],raises:0,limpers:0,
-     startStack:P[0].stack,vpip:false,pfr:false,result:null,runout:false,track:[]};
+     startStack:P[0].stack,vpip:false,pfr:false,result:null,runout:false,track:[],note:note};
   P.forEach(function(p){ p.bet=0;p.total=0;p.folded=false;p.allin=false;p.acted=false;p.cards=[deck.pop(),deck.pop()];
     p.top=1;p.agg=false;p.vp=false;p.pr=false;p.lastAct='';p.lastCls='';p.shown=false;p.score=0;p.won=0; });
   G.pos=positions();
@@ -493,6 +515,7 @@ function act(i,type,to){
   else if(type==='check'){ label='چک'; p.lastCls=''; }
   else if(type==='call'){
     post(i,L.toCall); label=(p.allin?'آل‌این ':'کال ')+money(L.toCall); p.lastCls='';
+    if(G.street>0&&p.seen) p.seen[4]++;
     if(G.street===0){ p.vp=true; if(G.raises===0) { G.limpers++; p.top=Math.min(p.top,.7); } else p.top=Math.min(p.top,.45); }
   } else {
     to=Math.max(L.minTo,Math.min(L.maxTo,Math.round(to/SB)*SB)); if(to>L.maxTo-SB) to=L.maxTo;
@@ -500,7 +523,7 @@ function act(i,type,to){
     post(i,to-p.bet); if(inc>=G.minRaise) G.minRaise=inc; G.curBet=to; G.raises++;
     P.forEach(function(q){ if(q!==p) q.acted=false; });
     label=p.allin?'آل‌این '+money(to):(wasBet?'بِت '+money(to):'ریز تا '+money(to)); p.lastCls='a-raise';
-    if(G.street===0){ p.vp=true; p.pr=true; p.top=Math.min(p.top, G.raises===1?.25:G.raises===2?.08:.04); } else p.agg=true;
+    if(G.street===0){ p.vp=true; p.pr=true; p.top=Math.min(p.top, G.raises===1?.25:G.raises===2?.08:.04); } else { p.agg=true; if(p.seen) p.seen[3]++; }
   }
   p.acted=true; p.lastAct=label; G.log.push(p.name+': '+label);
   G.acts.push({i:i,label:label,cls:p.lastCls}); if(type==='raise') G.aggr=i;
@@ -550,7 +573,8 @@ function finish(){
     pots.push({amt:amt,winners:winners,refund:elig.length===1&&showdown});
     prev=L;
   });
-  P.forEach(function(p){ p.stack+=p.won; p.bet=0; });
+  P.forEach(function(p){ p.stack+=p.won; p.bet=0;
+    if(!p.isHero&&p.seen){ p.seen[0]++; if(p.vp) p.seen[1]++; if(p.pr) p.seen[2]++; if(S.anon&&p.total-p.won>=25*BB) p.tilt=3; } });
   var hero=P[0], net=hero.stack-G.startStack;
   G.result={showdown:showdown,pots:pots,net:net};
   var st=T.stats; st.hands++; st.net+=net; if(net>0) st.won++;
@@ -577,13 +601,14 @@ function randomDecide(i){
 }
 function r10(x){ return Math.round(x/SB)*SB; }
 function botDecide(i){
-  var p=P[i], L=legal(i), s=p.style, pot=potTotal(), rnd=Math.random(), nOpp=0;
+  var p=P[i], L=legal(i), s=p.cur||p.style, pot=potTotal(), rnd=Math.random(), nOpp=0, an=S.anon;
+  var bsz=function(){ if(!an) return .5+Math.random()*.3; var r=Math.random(); return r<.25?.33:r<.55?.5:r<.8?.7:r<.94?1:1.4; };
   P.forEach(function(q){ if(q!==p&&!q.folded) nOpp++; });
   if(G.street===0){
     var pct=pfPct(p.cards[0],p.cards[1]), pos=G.pos[i];
     if(G.raises===0){
       var open=(OPEN[pos]||.3)*s.loose;
-      if(pct<=open){ if(rnd<.5+.5*s.aggr&&L.canRaise) return ['raise',r10(BB*(2.5+G.limpers)+(pos==='SB'?BB*.5:0))]; return ['call']; }
+      if(pct<=open){ if(rnd<.5+.5*s.aggr&&L.canRaise) return ['raise',r10(BB*((an?rr(2.1,3.3):2.5)+G.limpers)+(pos==='SB'?BB*.5:0))]; return ['call']; }
       if(L.toCall===0) return ['check'];
       if(s.loose>1.3&&pct<=open*1.7) return ['call'];
       if(pos==='SB'&&pct<=.55*s.loose) return ['call'];
@@ -601,12 +626,13 @@ function botDecide(i){
     return ['fold'];
   }
   var opps=[]; for(var k=0;k<nOpp;k++) opps.push({top:1,agg:false});
-  var eq=equity(p.cards,G.board,opps,AUTO?40:150).eq, vt=valueThr(nOpp);
+  var eq=equity(p.cards,G.board,opps,AUTO?40:150).eq+(an?rr(-.05,.05):0), vt=valueThr(nOpp);
   if(L.toCall===0){
     if(!L.canRaise) return ['check'];
-    if(eq>vt){ if(rnd<.5+.5*s.aggr) return ['raise',p.bet+r10(pot*(.5+Math.random()*.3))]; return ['check']; }
+    if(an&&eq>vt+.22&&G.street<3&&Math.random()<.22) return ['check'];
+    if(eq>vt){ if(rnd<.5+.5*s.aggr) return ['raise',p.bet+r10(pot*bsz())]; return ['check']; }
     if(eq>vt-.12&&rnd<s.aggr*.45) return ['raise',p.bet+r10(pot*.4)];
-    if(rnd<s.bluff*(nOpp===1?1.2:.5)) return ['raise',p.bet+r10(pot*.6)];
+    if(rnd<s.bluff*(nOpp===1?1.2:.5)) return ['raise',p.bet+r10(pot*(an?bsz():.6))];
     return ['check'];
   }
   var po=L.toCall/(pot+L.toCall), pressure=L.toCall/Math.max(1,pot-L.toCall);
@@ -763,6 +789,8 @@ function fly(a,b,delay){
   setTimeout(function(){ requestAnimationFrame(function(){ requestAnimationFrame(function(){ e.style.left=b[0]+'%'; e.style.top=b[1]+'%'; e.style.opacity=0; }); }); },delay||0);
   setTimeout(function(){ if(e.parentNode) e.parentNode.removeChild(e); },(delay||0)+750);
 }
+function tagTxt(p){ if(!S.anon) return p.style.tag; var s=p.seen; return s[0]<5?'تازه‌وارد · '+fa(s[0])+' دست':'ورود '+pc(s[1]/s[0])+' · ریز '+pc(s[2]/s[0]); }
+function guessType(s){ if(s[0]<8) return -1; var v=s[1]/s[0], r=s[1]?s[2]/s[1]:0; return v<=.17?3:(v>=.42&&r<.4)?1:(v>=.38&&r>=.6)?2:(v<=.3&&r>=.55)?0:4; }
 function restart(el,cls){ el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); }
 function render(){
   if(!HAS_DOM||!G) return;
@@ -780,6 +808,7 @@ function render(){
     var p=P[i], el=$('seat'+i), turn=G.actor===i&&!G.over;
     el.className='seat'+(i===0?' hero':'')+(turn?' turn':'')+(p.folded?' folded':'')+(G.over&&p.won>p.total?' win':'')+(realAggr&&G.aggr===i?' aggr':'');
     el.querySelector('.stk').textContent=money(p.stack);
+    if(p.style) el.querySelector('.tag').textContent=tagTxt(p);
     el.querySelector('.pos').textContent=G.pos[i];
     var a=el.querySelector('.act');
     if(UI.actTxt[i]!==p.lastAct){ UI.actTxt[i]=p.lastAct; if(p.lastAct){ a.style.display=''; a.textContent=p.lastAct; a.className='act '+p.lastCls; restart(a,'pop'); } else a.style.display='none'; }
@@ -852,6 +881,7 @@ function renderCoach(){
     el.className='g-'+fb.grade;
     h='<span class="pill '+fb.grade+'">'+GR[fb.grade]+'</span> '+fb.msg;
   } else h='<span class="lite">نوار بالای این کادر ترتیب حرکت‌ها را نشان می‌دهد. بعد از هر تصمیمت همین‌جا می‌گویم درست بود یا نه و چرا.</span>';
+  if(G.note&&!heroTurnNow&&G.street===0) h='<p style="margin:0 0 2px"><b>'+G.note+'</b></p>'+h;
   el.innerHTML=h;
   var hb=$('hintBtn'); if(hb) hb.onclick=function(){ UI.hintOpen=true; if(!UI.advice) UI.advice=coachAdvice(); renderCoach(); };
 }
@@ -899,6 +929,7 @@ function heroAct(type){
   var A=UI.advice||coachAdvice(), L=legal(0), to=UI.raiseTo;
   var real= type==='call'&&L.toCall===0?'check':type;
   var g=gradeAction(real,to,A);
+  if(L.toCall>0){ var ad=T.adapt; ad.fr++; if(real==='fold') ad.ff++; if(ad.fr>40){ ad.fr/=2; ad.ff/=2; } }
   var label={fold:'فولد',check:'چک',call:'کال '+money(L.toCall),raise:(to>=L.maxTo?'آل‌این ':G.curBet===0?'بِت ':'ریز تا ')+money(to)}[real];
   G.review.push({street:G.street,label:label,grade:g.grade,msg:g.msg,eq:A.eq,t:real,
     board:G.board.slice(),pos:G.pos[0],pot:A.pot,toCall:A.toCall,stack:P[0].stack,nOpp:A.nOpp,po:A.po,outs:A.outs?A.outs.n:0,
@@ -1123,24 +1154,34 @@ function showGuide(){
     h+=handCard(GV.sel);
     h+='<p class="lite">شانس بردها از شبیه‌سازی ده‌ها هزار دست در برابر کارت‌های تصادفی آمده و فرض می‌کند همه تا آخر می‌مانند. رتبه ترکیبی از هر سه عدد است. درصدهای جایگاه یک نقطه‌ی شروعِ محافظه‌کارانه برای میز ۶ نفره‌اند، نه قانون قطعی.</p>';
   } else if(GV.tab===2){
-    var TY={'سارا':['محکم و تهاجمی (TAG)','دست‌های کمی بازی می‌کند ولی با همان‌ها محکم شرط می‌بندد. ریزش معمولاً دست واقعی است و بعد از فلاپ ادامه می‌دهد.','به ریزهایش احترام بگذار و با دست متوسط درگیر نشو. از جایگاه دیر بلایندش را بدزد؛ اگر جواب داد، رها کن.'],
-      'کاوه':['شل و کال‌کن (Calling Station)','با دست‌های زیادی وارد می‌شود و تا آخر کال می‌کند. خیلی کم ریز می‌دهد و تقریباً هیچ‌وقت بلوف نمی‌زند؛ پس وقتی ریز داد، دستش قوی است.','به او بلوف نزن، چون فولد نمی‌دهد. با دست خوب بزرگ‌تر از معمول شرط ببند؛ او می‌پردازد.'],
-      'مانی':['بی‌پروا و بلوف‌زن (Maniac)','زیاد ریز می‌دهد و زیاد بلوف می‌زند. ریزش الزاماً دست قوی نیست و شرط‌های بزرگش گاهی خالی است.','با جفتِ خوب یا بهتر کال کن و بگذار خودش پول وسط بگذارد. با دست ضعیف وارد جنگِ ریز با او نشو؛ نوسانت بالا می‌رود.'],
-      'نگار':['خیلی سفت (Nit)','فقط با بهترین دست‌ها وارد می‌شود. ریزش یعنی دست قوی؛ ری‌ریزش تقریباً همیشه جفت بالا یا آس‌شاه است.','بلایندش را زیاد بدزد. هر وقت مقاومت کرد یا شرط بست، بدون دست خیلی قوی فولد بده.'],
-      'بهرام':['متعادل','نزدیک به بازی استاندارد: نه خیلی سفت، نه خیلی شل، با بلوفِ به‌اندازه.','ضعف مشخصی ندارد. جلویش همان بازی درستِ عددی را بکن و جایگاه را جدی بگیر.']};
-    h+='<p>هر حریف سبک ثابتی دارد. معنیِ ریز به این بستگی دارد که <b>چه کسی</b> و <b>از کجا</b> ریز داده.</p>';
-    BOTS.forEach(function(bt,k){ var ty=TY[bt.name], s=(T.stats.bots||{})[bt.name], three=.045*bt.loose*(.6+bt.aggr);
-      h+='<div class="hcard" id="pt'+k+'"'+(GV.who===bt.name?' style="outline:2px solid var(--brass)"':'')+'><h3>'+bt.name+' · '+ty[0]+'</h3><p>'+ty[1]+'</p>'+
-        '<div class="kv"><span>از جایگاه اول (UTG) وارد می‌شود با</span><span>حدود '+pc(Math.min(1,OPEN.UTG*bt.loose))+' بالای دست‌ها</span></div>'+
-        '<div class="kv"><span>از دیلر (BTN) وارد می‌شود با</span><span>حدود '+pc(Math.min(1,OPEN.BTN*bt.loose))+' بالا</span></div>'+
-        '<div class="kv"><span>وقتی وارد می‌شود، با ریز است</span><span>حدود '+pc(.5+.5*bt.aggr)+' مواقع</span></div>'+
-        '<div class="kv"><span>ری‌ریز (تری‌بت)</span><span>حدود '+pc(three)+' بالا</span></div>'+
-        '<div class="kv"><span>بلوف بعد از فلاپ</span><span>'+(bt.bluff>=.25?'زیاد':bt.bluff>=.1?'گاهی':'تقریباً هیچ‌وقت')+'</span></div>'+
-        (s&&s[0]>=5?'<div class="kv"><span>در میز تو تا حالا ('+fa(s[0])+' دست)</span><span>وارد شده '+pc(s[1]/s[0])+' · ریز داده '+pc(s[2]/s[0])+'</span></div>':'')+
-        '<p><b>چطور جلویش بازی کنی:</b> '+ty[2]+'</p></div>'; });
+    var TY=[['محکم و تهاجمی (TAG)','دست‌های کمی بازی می‌کند ولی با همان‌ها محکم شرط می‌بندد. ریزش معمولاً دست واقعی است و بعد از فلاپ ادامه می‌دهد.','به ریزهایش احترام بگذار و با دست متوسط درگیر نشو. از جایگاه دیر بلایندش را بدزد؛ اگر جواب داد، رها کن.','ورود ۱۸ تا ۲۸٪ · بیشترش با ریز'],
+      ['شل و کال‌کن (Calling Station)','با دست‌های زیادی وارد می‌شود و تا آخر کال می‌کند. خیلی کم ریز می‌دهد و تقریباً هیچ‌وقت بلوف نمی‌زند؛ پس وقتی ریز داد، دستش قوی است.','به او بلوف نزن، چون فولد نمی‌دهد. با دست خوب بزرگ‌تر از معمول شرط ببند؛ او می‌پردازد.','ورود بالای ۴۲٪ · ریزِ کم'],
+      ['بی‌پروا و بلوف‌زن (Maniac)','زیاد ریز می‌دهد و زیاد بلوف می‌زند. ریزش الزاماً دست قوی نیست و شرط‌های بزرگش گاهی خالی است.','با جفتِ خوب یا بهتر کال کن و بگذار خودش پول وسط بگذارد. با دست ضعیف وارد جنگِ ریز با او نشو؛ نوسانت بالا می‌رود.','ورود بالای ۳۸٪ · بیشترش با ریز'],
+      ['خیلی سفت (Nit)','فقط با بهترین دست‌ها وارد می‌شود. ریزش یعنی دست قوی؛ ری‌ریزش تقریباً همیشه جفت بالا یا آس‌شاه است.','بلایندش را زیاد بدزد. هر وقت مقاومت کرد یا شرط بست، بدون دست خیلی قوی فولد بده.','ورود زیر ۱۷٪'],
+      ['متعادل','نزدیک به بازی استاندارد: نه خیلی سفت، نه خیلی شل، با بلوفِ به‌اندازه.','ضعف مشخصی ندارد. جلویش همان بازی درستِ عددی را بکن و جایگاه را جدی بگیر.','ورود ۲۵ تا ۳۸٪ · نیمی با ریز']];
+    if(S.anon){
+      h+='<p>حریف‌ها ناشناس‌اند: سبک هر کدام تصادفی است، حالشان دست‌به‌دست عوض می‌شود، بعد از باخت سنگین تیلت می‌کنند و هر چند دست یک نفر می‌رود و نفر تازه می‌نشیند. مثل میز واقعی، باید از روی رفتارشان بخوانی‌شان.</p><h3 class="sec">حریف‌های الانِ میز</h3>';
+      P.forEach(function(p,k){ if(p.isHero) return; var s=p.seen, g=guessType(s), af=s[4]?(s[3]/s[4]):s[3];
+        h+='<div class="hcard" id="pt'+k+'"'+(GV.who===p.name?' style="outline:2px solid var(--brass)"':'')+'><h3>'+p.name+'</h3>'+
+          '<div class="kv"><span>دست‌هایی که از او دیده‌ای</span><span>'+fa(s[0])+'</span></div>'+
+          (s[0]?'<div class="kv"><span>وارد دست شده (VPIP)</span><span>'+pc(s[1]/s[0])+'</span></div><div class="kv"><span>پیش از فلاپ ریز داده (PFR)</span><span>'+pc(s[2]/s[0])+'</span></div><div class="kv"><span>بعد از فلاپ: شرط و ریز در برابر کال</span><span>'+fa(s[3])+' به '+fa(s[4])+'</span></div>':'')+
+          (g<0?'<p class="lite">برای حدس زدن تیپش زود است؛ دست‌کم ۸ دست لازم است. تا آن موقع محتاط بازی کن.</p>':'<p><b>حدس از روی آمار: '+TY[g][0]+'.</b> '+TY[g][2]+'</p><p class="lite">این فقط حدس است؛ با '+fa(s[0])+' دست هنوز می‌تواند اشتباه باشد و حال او هم عوض می‌شود.</p>')+'</div>'; });
+      h+='<h3 class="sec">تیپ‌های رایج و نشانه‌هایشان</h3>';
+      TY.forEach(function(ty){ h+='<div class="hcard"><h3>'+ty[0]+'</h3><div class="kv"><span>نشانه در آمار</span><span>'+ty[3]+'</span></div><p>'+ty[1]+'</p><p><b>چطور جلویش بازی کنی:</b> '+ty[2]+'</p></div>'; });
+    } else {
+      h+='<p>در حالت «ثابت با برچسب» هر حریف سبک ثابتی دارد. معنیِ ریز به این بستگی دارد که <b>چه کسی</b> و <b>از کجا</b> ریز داده.</p>';
+      BOTS.forEach(function(bt,k){ var ty=TY[k], three=.045*bt.loose*(.6+bt.aggr);
+        h+='<div class="hcard" id="pt'+(k+1)+'"'+(GV.who===bt.name?' style="outline:2px solid var(--brass)"':'')+'><h3>'+bt.name+' · '+ty[0]+'</h3><p>'+ty[1]+'</p>'+
+          '<div class="kv"><span>از جایگاه اول (UTG) وارد می‌شود با</span><span>حدود '+pc(Math.min(1,OPEN.UTG*bt.loose))+' بالای دست‌ها</span></div>'+
+          '<div class="kv"><span>از دیلر (BTN) وارد می‌شود با</span><span>حدود '+pc(Math.min(1,OPEN.BTN*bt.loose))+' بالا</span></div>'+
+          '<div class="kv"><span>وقتی وارد می‌شود، با ریز است</span><span>حدود '+pc(.5+.5*bt.aggr)+' مواقع</span></div>'+
+          '<div class="kv"><span>ری‌ریز (تری‌بت)</span><span>حدود '+pc(three)+' بالا</span></div>'+
+          '<div class="kv"><span>بلوف بعد از فلاپ</span><span>'+(bt.bluff>=.25?'زیاد':bt.bluff>=.1?'گاهی':'تقریباً هیچ‌وقت')+'</span></div>'+
+          '<p><b>چطور جلویش بازی کنی:</b> '+ty[2]+'</p></div>'; });
+    }
     h+='<h3 class="sec">ریز در چه حالتی چه معنی دارد</h3>'+
       [['ریز از جایگاه اول','رنج قوی؛ محتاط باش'],['ریز از دیلر یا یکی مانده به دیلر','رنج گشاد؛ می‌تواند دزدیِ بلایند باشد'],['ری‌ریز (تری‌بت)','خیلی قوی، مگر از بازیکن بی‌پروا'],['لیمپ و بعد کالِ ریز','دست متوسط یا دراو، کم‌تر دست بزرگ'],['چک و بعد ریز روی شرط تو','معمولاً دست خیلی قوی'],['شرط بزرگ در ریور از بازیکنِ کم‌شرط','تقریباً همیشه دست قوی؛ فولدِ دست متوسط درست است'],['شرط کوچک بعد از چک‌های پیاپی','اغلب دست متوسط یا تلاش برای ارزان دیدن']].map(function(x){return '<div class="kv"><span>'+x[0]+'</span><span style="font-weight:400;max-width:55%">'+x[1]+'</span></div>';}).join('');
-    h+='<p class="lite">درصدها از تنظیمات واقعیِ همین حریف‌ها می‌آید. بازیکن واقعی سبکش را عوض می‌کند؛ این الگوها نقطه‌ی شروع‌اند. روی صندلی هر حریف در میز بزنی، همین کارت باز می‌شود.</p>';
+    h+='<p class="lite">روی صندلی هر حریف در میز بزنی، کارت همان نفر باز می‌شود.</p>';
   } else {
     h+='<h3 class="sec">۱. جایگاه مهم‌تر از کارت است</h3><p>هرچه دیرتر نوبتت باشد، اطلاعات بیشتری داری و دست‌های بیشتری را می‌شود بازی کرد.</p>'+
       ['UTG','HJ','CO','BTN','SB'].map(function(p){return '<div class="kv"><span>'+p+' · '+POS_FA[p]+'</span><span>'+pc(OPEN[p])+' بالایی</span></div>';}).join('')+
@@ -1156,7 +1197,7 @@ function showGuide(){
   }
   var body=$('guideBody'), keep=!$('guideSheet').hidden?body.scrollTop:0;
   body.innerHTML=h; $('guideSheet').hidden=false; body.scrollTop=keep;
-  if(GV.tab===2&&GV.who){ BOTS.forEach(function(bt,k){ if(bt.name===GV.who&&$('pt'+k)) body.scrollTop=$('pt'+k).offsetTop-70; }); GV.who=''; }
+  if(GV.tab===2&&GV.who){ P.forEach(function(p,k){ if(p.name===GV.who&&$('pt'+k)) body.scrollTop=$('pt'+k).offsetTop-70; }); GV.who=''; }
   Array.prototype.forEach.call(body.querySelectorAll('.tabs button'),function(b){ b.onclick=function(){ GV.tab=+b.getAttribute('data-t'); body.scrollTop=0; showGuide(); }; });
   if(GV.tab===0){
     Array.prototype.forEach.call($('gPos').children,function(b){ b.onclick=function(){ GV.pos=b.getAttribute('data-p'); showGuide(); }; });
@@ -1178,6 +1219,8 @@ function showHelp(){
 function showMenu(){
   var st=T.stats, dec=st.good+st.ok+st.bad, h='<h2>تنظیمات و آمار</h2>';
   h+='<div class="opt"><span>تعداد حریف</span><span class="seg" id="oSeg">'+[1,2,3,4,5].map(function(n){return '<button type="button" data-n="'+n+'" class="'+(S.opps===n?'on':'')+'">'+fa(n)+'</button>';}).join('')+'</span></div>';
+  h+='<div class="opt" style="flex-wrap:wrap"><span>حریف‌ها</span><span class="seg" id="nSeg"><button type="button" data-v="1" class="'+(S.anon?'on':'')+'">ناشناس و متغیر</button><button type="button" data-v="0" class="'+(!S.anon?'on':'')+'">ثابت با برچسب</button></span></div>';
+  h+='<p class="modeNote">'+(S.anon?'مثل میز واقعی: اسم و سبک تصادفی، حالِ متغیر، تیلت بعد از باخت، و رفت‌وآمد بازیکن‌ها. چیزی از قبل معلوم نیست.':'پنج حریفِ همیشگی با سبک ثابت که زیر اسمشان نوشته شده؛ برای تمرینِ بازی جلوی هر تیپ.')+'</p>';
   h+='<div class="opt"><span>سرعت بازی</span><span class="seg" id="fSeg">'+['خیلی آهسته','آهسته','عادی','تند'].map(function(t,n){return '<button type="button" data-v="'+n+'" class="'+(S.speed===n?'on':'')+'">'+t+'</button>';}).join('')+'</span></div>';
   h+='<div class="opt"><span>مکث بعد از هر حرکت حریف</span><span class="seg" id="sSeg"><button type="button" data-v="1" class="'+(S.step?'on':'')+'">روشن</button><button type="button" data-v="0" class="'+(!S.step?'on':'')+'">خاموش</button></span></div>';
   h+='<div class="opt"><span>رفتن خودکار به دست بعد (۹ ثانیه)</span><span class="seg" id="aSeg"><button type="button" data-v="1" class="'+(S.auto?'on':'')+'">روشن</button><button type="button" data-v="0" class="'+(!S.auto?'on':'')+'">خاموش</button></span></div>';
@@ -1201,6 +1244,7 @@ function showMenu(){
   if($('hSeg')) Array.prototype.forEach.call($('hSeg').children,function(b){ b.onclick=function(){ S.autoHint=b.getAttribute('data-v')==='1'; save(); showMenu(); }; });
   Array.prototype.forEach.call($('mSeg').children,function(b){ b.onclick=function(){ S.mode=+b.getAttribute('data-v'); if(S.mode===3) T.stats.repNo=T.handNo; save(); showMenu(); if(G) renderCoach(); }; });
   $('helpBtn').onclick=function(){ $('menuSheet').hidden=true; showHelp(); };
+  Array.prototype.forEach.call($('nSeg').children,function(b){ b.onclick=function(){ var v=b.getAttribute('data-v')==='1'; if(v!==S.anon){ S.anon=v; UI.pendingTable=true; } showMenu(); }; });
   Array.prototype.forEach.call($('aSeg').children,function(b){ b.onclick=function(){ S.auto=b.getAttribute('data-v')==='1'; save(); showMenu(); }; });
   Array.prototype.forEach.call($('sSeg').children,function(b){ b.onclick=function(){ S.step=b.getAttribute('data-v')==='1'; save(); showMenu(); if(!S.step&&UI.pending){ var f=UI.pending; UI.pending=null; f(); } }; });
   Array.prototype.forEach.call($('fSeg').children,function(b){ b.onclick=function(){ S.speed=+b.getAttribute('data-v'); save(); showMenu(); }; });
